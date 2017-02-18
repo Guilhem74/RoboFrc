@@ -30,6 +30,8 @@ public:
 	// déclaration des variables
 	int robotMode ;
 
+	//bidon
+
 	void RobotInit() {
 
 		// initialisation des objets et données
