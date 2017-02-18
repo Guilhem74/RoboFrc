@@ -15,7 +15,7 @@
 #define MODE_ALIGN 1
 #define MODE_CENTER 2
 
-<<<<<<< HEAD
+
 
 // Pour la fonction de centrage automatique avec camera
 #define TAILLE_IMAGE_CAMERA 640
@@ -23,10 +23,10 @@
 #define VITESSE_AUTO 0.5
 const bool TIMEOUT_ACTIF = true; //true pour activer les timeout et false pour desactiver
 
-=======
+
 #define BAC_HAUT 1
 #define BAC_BAS 0
->>>>>>> refs/remotes/origin/Pince-Bac
+
 
 /* TABLEAU DE CABLAGE du ROBORIO
  *
