@@ -118,13 +118,13 @@ void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultras
 		// if(target.lenght()==0)
 		if (!(timeout > TIMEOUT || TIMEOUT_ACTIF))
 		{
-			if (nb_rectangles > 2)
+			if (nb_lignes > 2)
 				{
 					//traitement pour trouver les deux rectangles principaux
 
 
 				}
-				else if (nb_rectangles == 2)
+				else if (nb_lignes == 2)
 				{
 					// On centre le robot par rapport aux deux rectangles
 					// calcul de la position du robot par rapport aux bandes
@@ -139,7 +139,7 @@ void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultras
 					}
 
 				}
-				else if (nb_rectangles == 1)
+				else if (nb_lignes == 1)
 				{
 					// un seul rectangle, on essaye de trouver le deuxième
 					// on regarde la position du rectangle par rapport au milieu de l'image
