@@ -31,6 +31,11 @@ mecaFrontLeft(0),mecaFrontRight(1),mecaBackRight(2),mecaBackLeft(3),verins_AV(0,
 		align_marge = 20; // en mm
 		rot_marge = 10; // en mm
 		rot_speed = 0.3; // entre -1 et 1
+
+		// pour le centrage automatique avec camera
+		timeout = 0;
+		position_robot_camera = 0;
+
 }
 
 
@@ -111,10 +116,69 @@ void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultras
 	case MODE_CENTER :
 		// Si pas de cible dans image: afficher message pour centrage manuel
 		// if(target.lenght()==0)
+		if (!(timeout > TIMEOUT || TIMEOUT_ACTIF))
+		{
+			if (nb_rectangles > 2)
+				{
+					//traitement pour trouver les deux rectangles principaux
 
+
+				}
+				else if (nb_rectangles == 2)
+				{
+					// On centre le robot par rapport aux deux rectangles
+					// calcul de la position du robot par rapport aux bandes
+					position_robot_camera = (rect[0].x1+rect[1].x1)/2;
+					if (position_robot_camera > TAILLE_IMAGE_CAMERA/2)
+					{
+						DeplaceAutoDroite();
+					}
+					else
+					{
+						DeplaceAutoGauche();
+					}
+
+				}
+				else if (nb_rectangles == 1)
+				{
+					// un seul rectangle, on essaye de trouver le deuxième
+					// on regarde la position du rectangle par rapport au milieu de l'image
+					// TODO optimiser en prennant en compte l'épaisseur du du rectangle
+					if (rect[0].x1 > TAILLE_IMAGE_CAMERA/2)
+					{
+						DeplaceAutoDroite();
+						timeout += 1;
+					}
+					else
+					{
+						DeplaceAutoGauche();
+						timeout +=1;
+					}
+				}
+				else
+				{
+					printf("Pas de rectangles repérés, passage en mode manuel ?");
+				}
+			}
 		break;
 	}
 }
+
+
+void BaseRoulante::DeplaceAutoDroite(){
+	//TODO prendre en compte le nombre de tick de codeuse
+	//TODO conversion en cm ?
+	R2D2->MecanumDrive_Cartesian(VITESSE_AUTO,-1,0);//ajuster le -1 pour le deplacement à droite ou a gauche
+}
+
+void BaseRoulante::DeplaceAutoGauche(){
+	//TODO prendre en compte le nombre de tick de codeuse
+	//TODO conversion en cm ?
+	R2D2->MecanumDrive_Cartesian(VITESSE_AUTO,1,0);//ajuster le 1 pour le deplacement à droite ou a gauche
+}
+
+
+
 
 BaseRoulante::~BaseRoulante() {
 	// TODO Auto-generated destructor stub

@@ -9,6 +9,14 @@
 #define MODE_ALIGN 1
 #define MODE_CENTER 2
 
+
+// Pour la fonction de centrage automatique avec camera
+#define TAILLE_IMAGE_CAMERA 640
+#define TIMEOUT 100 // en nombre de passage dans la boucle
+#define VITESSE_AUTO 0.5
+const bool TIMEOUT_ACTIF = true; //true pour activer les timeout et false pour desactiver
+
+
 /* TABLEAU DE CABLAGE du ROBORIO
  *
  * 	RS-232	->
