@@ -21,8 +21,11 @@ public:
 	DoubleSolenoid m_verinSer;
 	void serrerPince();
 	void desserrerPince();
-	//void leverPince(Bac*);
+	void leverPince(Bac*);
     void abaisserPince();
+    DigitalInput* limitSwitch;
+
+
 
 };
 

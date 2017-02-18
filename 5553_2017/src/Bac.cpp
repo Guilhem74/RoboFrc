@@ -14,8 +14,12 @@
 Bac::Bac(): m_verinBac(2,3)
 {
 	// TODO Auto-generated constructor stub
-	//m_verinBac.Set(frc::DoubleSolenoid::kReverse);
-	//m_statut = 0;//BTN_BAC_DOWN;
+	m_verinBac.Set(frc::DoubleSolenoid::kReverse);
+	m_statut = 0;//BTN_BAC_DOWN;
+}
+Bac::~Bac()
+{
+
 }
 
 
