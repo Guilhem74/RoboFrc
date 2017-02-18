@@ -12,7 +12,10 @@
 #include <constantes.h>
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0),mecaFrontRight(1),mecaBackRight(2),mecaBackLeft(3),verins_AV(0,1),verins_AR(2,3)
+mecaFrontLeft(4), mecaFrontRight(1), mecaBackRight(2), mecaBackLeft(3), rouleau(0),
+verins_BASE(0, 1)
+
+
 {
 		// arrêt des moteurs
 		mecaFrontLeft.Set(0.0);
@@ -20,8 +23,7 @@ mecaFrontLeft(0),mecaFrontRight(1),mecaBackRight(2),mecaBackLeft(3),verins_AV(0,
 		mecaBackRight.Set(0.0);
 		mecaBackLeft.Set(0.0);
 		// configuration mode TANK
-		verins_AV.Set(frc::DoubleSolenoid::kReverse);
-		verins_AR.Set(frc::DoubleSolenoid::kReverse);
+		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
 		robotMode = MODE_TANK;
 		mode_auto = MODE_ALIGN;
 		// configuration du robotDrive
@@ -42,13 +44,13 @@ mecaFrontLeft(0),mecaFrontRight(1),mecaBackRight(2),mecaBackLeft(3),verins_AV(0,
 void BaseRoulante::setRobotMode(int mode){
 	if(mode == MODE_TANK){
 		// rentrer les verins
-		verins_AV.Set(frc::DoubleSolenoid::kReverse);
-		verins_AR.Set(frc::DoubleSolenoid::kReverse);
+		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
+
 	}
 	if(mode == MODE_MECA){
 		// pousser les verins
-		verins_AV.Set(frc::DoubleSolenoid::kForward);
-		verins_AR.Set(frc::DoubleSolenoid::kForward);
+		verins_BASE.Set(frc::DoubleSolenoid::kForward);
+
 	}
 	// store robot mode
 	robotMode = mode;
@@ -184,4 +186,17 @@ BaseRoulante::~BaseRoulante() {
 	// TODO Auto-generated destructor stub
 
 }
+void BaseRoulante::MonterCorde(Joystick* Joystick1)
+{
+	float tr=(float)Joystick1->GetThrottle();
+tr=tr-1;
+if(tr>0)
+	tr=0;
 
+	rouleau.Set(tr);
+
+	SmartDashboard::PutNumber("DB/Slider 0",tr);
+
+
+
+}
