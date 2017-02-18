@@ -8,6 +8,7 @@
 #include <ADXRS450_Gyro.h>
 #include <BaseRoulante.h>
 #include <constantes.h>
+#include <Encoder.h>
 
 #include <thread>
 #include <CameraServer.h>
@@ -25,6 +26,10 @@ public:
 	ADXRS450_Gyro* gyro;
 	Ultrasonic* ultraSon_G;
 	Ultrasonic* ultraSon_D;
+	Encoder* encoder_AV_D;
+	Encoder* encoder_AV_G;
+	Encoder* encoder_AR_D;
+	Encoder* encoder_AR_G;
 	// déclaration des objets
 	BaseRoulante BR;
 	// déclaration des variables
@@ -41,7 +46,10 @@ public:
 		Joystick1 = new Joystick(0);								// à connecter sur port USB0
 		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-0 et DIO-1
 		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-2 et DIO-3
-
+		encoder_AV_D = new Encoder(10, 11);   //TODO mettre des numeros de pins coherents
+		encoder_AV_G = new Encoder(12, 13);   //http://first.wpi.edu/FRC/roborio/release/docs/cpp/classfrc_1_1Encoder.html#ab5552ca2afce5bc0257f73ceb18558cf
+		encoder_AR_D = new Encoder(14, 15);
+		encoder_AR_G = new Encoder(16, 17);
 		//lancement de la video
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
