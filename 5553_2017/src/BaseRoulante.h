@@ -11,7 +11,7 @@ class BaseRoulante {
 public:	BaseRoulante();
 	virtual ~BaseRoulante();	void setRobotMode(int);	int getRobotMode();
 
-	void mvtJoystick(Joystick*, ADXRS450_Gyro* );	void deposeRoueAuto(Joystick* , ADXRS450_Gyro*, Ultrasonic*,Ultrasonic*);	void resetModeAuto();	void DeplaceAutoDroite();	void DeplaceAutoGauche();    VictorSP mecaFrontLeft;	VictorSP mecaFrontRight;	VictorSP mecaBackRight;	VictorSP mecaBackLeft;	VictorSP rouleau;	RobotDrive* R2D2;	DoubleSolenoid verins_BASE;	double approach_speed;	double align_dist;	double align_marge;	double rot_speed;	double rot_marge;	// Pour la fonction de centrage automatique avec camera	int timeout = 0;	int nb_lignes;	int position_robot_camera;
+	void mvtJoystick(Joystick*, ADXRS450_Gyro* );	void deposeRoueAuto(Joystick* , ADXRS450_Gyro*, Ultrasonic*,Ultrasonic*);	void resetModeAuto();	void DeplaceAutoDroite();	void DeplaceAutoGauche();	void MonterCorde(Joystick*);    VictorSP mecaFrontLeft;	VictorSP mecaFrontRight;	VictorSP mecaBackRight;	VictorSP mecaBackLeft;	VictorSP rouleau;	RobotDrive* R2D2;	DoubleSolenoid verins_BASE;	double approach_speed;	double align_dist;	double align_marge;	double rot_speed;	double rot_marge;	// Pour la fonction de centrage automatique avec camera	int timeout = 0;	int nb_lignes;	int position_robot_camera;
 
 private:	int robotMode;
 	float zCoeff = 0.5;	int mode_auto;

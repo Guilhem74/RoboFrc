@@ -130,7 +130,7 @@ void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultras
 				{
 					// On centre le robot par rapport aux deux rectangles
 					// calcul de la position du robot par rapport aux bandes
-					position_robot_camera = (rect[0].x1+rect[1].x1)/2;
+					//position_robot_camera = (rect[0].x1+rect[1].x1)/2;
 					if (position_robot_camera > TAILLE_IMAGE_CAMERA/2)
 					{
 						DeplaceAutoDroite();
@@ -146,7 +146,7 @@ void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultras
 					// un seul rectangle, on essaye de trouver le deuxième
 					// on regarde la position du rectangle par rapport au milieu de l'image
 					// TODO optimiser en prennant en compte l'épaisseur du du rectangle
-					if (rect[0].x1 > TAILLE_IMAGE_CAMERA/2)
+					/*if (rect[0].x1 > TAILLE_IMAGE_CAMERA/2)
 					{
 						DeplaceAutoDroite();
 						timeout += 1;
@@ -155,7 +155,7 @@ void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultras
 					{
 						DeplaceAutoGauche();
 						timeout +=1;
-					}
+					}*/
 				}
 				else
 				{

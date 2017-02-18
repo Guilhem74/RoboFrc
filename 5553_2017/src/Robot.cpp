@@ -12,6 +12,7 @@
 #include <Pince.h>
 
 #include <thread>
+#include <test_contour.h>
 #include <CameraServer.h>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
@@ -67,7 +68,7 @@ public:
 	}
 
 	void TeleopPeriodic() {
-BR.MonterCorde(Joystick1);
+		//BR.MonterCorde(Joystick1);
 		// si appui sur bouton depose_roue_auto:
 		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
 			// gestion du depot de roue en mode automatique
@@ -153,9 +154,10 @@ private:
 		// Mats are very memory expensive. Lets reuse this Mat.
 		cv::Mat mat;
 
-		// FRED TEST
-		//Pipeline* myPipe = new Pipeline();
-
+		//Reconnaissance visuelle
+		test_contour* p= new test_contour();
+		std::shared_ptr<NetworkTable> table;
+		table = NetworkTable::GetTable("GRIP/myContoursReport");
 
 		while (true) {
 			// Tell the CvSink to grab a frame from the camera and put it
@@ -180,8 +182,19 @@ private:
 
 			outputStream.PutFrame(mat);
 
-			// FRED TEST
-			//myPipe->Process();
+			//appel fonction reconnaissance visuelle
+			p->Process(mat);
+						//std::cout << "findBlobsInput = " << std::endl << " " << mat << std::endl << std::endl;
+							/*double[] defaultValue= new double[0];
+							table.GetNumberArray("CenterX",defaultValue);*/
+
+			//tentative lecture des données renvoyées par fonctions de reconnaissance visuelle
+			std::vector<double> arr= table->GetNumberArray("Width", llvm::ArrayRef<double>());
+			std::cout<<"avant boucle"<<endl<<arr.size()<<endl;
+			for(unsigned int i=0;i<arr.size();i++){
+					std::cout<<arr[i]<<""<<endl;
+					std::cout<<"dans boucle"<<endl;
+			}
 		}
 	}
 };
