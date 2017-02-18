@@ -8,7 +8,12 @@
 #include <ADXRS450_Gyro.h>
 #include <BaseRoulante.h>
 #include <constantes.h>
+
 #include <Encoder.h>
+
+#include <Bac.h>
+#include <Pince.h>
+
 
 #include <thread>
 #include <CameraServer.h>
@@ -33,6 +38,8 @@ public:
 	// déclaration des objets
 	BaseRoulante BR;
 	// déclaration des variables
+	Bac* bac;
+	Pince pince;
 	int robotMode ;
 
 	//bidon
@@ -54,6 +61,8 @@ public:
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
 
+		bac = new Bac();
+
 	}
 
 	void AutonomousInit() override {
@@ -69,7 +78,7 @@ public:
 	}
 
 	void TeleopPeriodic() {
-
+BR.MonterCorde(Joystick1);
 		// si appui sur bouton depose_roue_auto:
 		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
 			// gestion du depot de roue en mode automatique
@@ -97,6 +106,30 @@ public:
 			{
 				BR.mvtJoystick(Joystick1,gyro);
 			}
+
+			//si boutton lever bac
+			if(Joystick1->GetRawButton(BTN_BAC_UP))
+				bac->leverBac();
+
+			//si bouton abaisser bac
+			if(Joystick1->GetRawButton(BTN_BAC_DOWN))
+				bac->rentrerBac();
+
+			if(Joystick1->GetRawButton(BTN_SER_PINCE))
+			    pince.serrerPince();
+
+			if(Joystick1->GetRawButton(BTN_DESSER_PINCE))
+				pince.desserrerPince();
+
+			/*if(Joystick1->GetRawButton(BTN_PINCE_UP))
+				pince.leverPince(bac);*/
+
+			if(Joystick1->GetRawButton(BTN_PINCE_DOWN))
+				pince.abaisserPince();
+
+
+
+
 		}
 
 		// FOR TEST //
