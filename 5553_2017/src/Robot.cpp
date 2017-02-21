@@ -8,6 +8,8 @@
 #include <ADXRS450_Gyro.h>
 #include <BaseRoulante.h>
 #include <constantes.h>
+#include "Bac.h"
+#include "Pince.h"
 
 #include <thread>
 #include <CameraServer.h>
@@ -28,6 +30,8 @@ public:
 	// déclaration des objets
 	BaseRoulante BR;
 	// déclaration des variables
+	Bac bac;
+	Pince pince;
 	int robotMode ;
 
 	void RobotInit() {
@@ -60,14 +64,15 @@ public:
 
 	void TeleopPeriodic() {
 
-		// si appui sur bouton depose_roue_auto:
+// si appui sur bouton depose_roue_auto:
 		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
 			// gestion du depot de roue en mode automatique
-			BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
+			//BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
 		}
 		else{
 
 			BR.resetModeAuto();
+
 
 
 			// Si selection du mode deplacement TANK
@@ -87,6 +92,36 @@ public:
 			{
 				BR.mvtJoystick(Joystick1,gyro);
 			}
+
+			if (Joystick1->GetRawButton(3))
+			{
+				pince.serrerPince();
+				std::cout<<"je serre"<<std::endl;
+			}
+
+
+			if (Joystick1->GetRawButton(4))
+			{
+				pince.desserrerPince();
+				std::cout<<"je deserre"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(5))
+			{
+				pince.leverPince();
+
+				std::cout<<"je leve"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(6))
+			{
+				pince.abaisserPince();
+				std::cout<<"je baisse"<<std::endl;
+
+			}
+BR.mvtTreuil( Joystick1);
 		}
 
 		// FOR TEST //

@@ -10,7 +10,7 @@
 class BaseRoulante {
 public:	BaseRoulante();
 	virtual ~BaseRoulante();	void setRobotMode(int);	int getRobotMode();
-	void mvtJoystick(Joystick*, ADXRS450_Gyro* );	void deposeRoueAuto(Joystick* , ADXRS450_Gyro*, Ultrasonic*,Ultrasonic*);	void resetModeAuto();	int Rampe(int x);	VictorSP mecaFrontLeft;	VictorSP mecaFrontRight;	VictorSP mecaBackRight;	VictorSP mecaBackLeft;	RobotDrive* R2D2;	DoubleSolenoid verins_AV;	double approach_speed;	double align_dist;	double align_marge;	double rot_speed;	double rot_marge;
+	void mvtJoystick(Joystick*, ADXRS450_Gyro* );	void deposeRoueAuto(Joystick* , ADXRS450_Gyro*, Ultrasonic*,Ultrasonic*);	void resetModeAuto();	void mvtTreuil(	Joystick* joystick);	int Rampe(int x);	VictorSP mecaFrontLeft;	VictorSP mecaFrontRight;	VictorSP mecaBackRight;	VictorSP mecaBackLeft;	VictorSP treuil;	DoubleSolenoid verins_BASE;	Joystick* joystick;	double approach_speed;	double align_dist;	double align_marge;	double rot_speed;	double rot_marge;
 private:	typedef std::chrono::high_resolution_clock Time;	typedef std::chrono::duration<float> deltaT;	typedef std::chrono::milliseconds ms;	int robotMode;
 	float zCoeff = 0.5;	int mode_auto;	std::chrono::_V2::system_clock::time_point t0 = Time::now();	float previousPower = 0.0f;	float xprecedent=0.0f;	float coeffAcceleration=0.003f;	int powerActuel;
 };

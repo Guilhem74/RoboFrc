@@ -12,16 +12,17 @@
 #include <constantes.h>
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0),mecaBackLeft(1),mecaFrontRight(3),mecaBackRight(2),
-verins_AV(6,7)
+mecaFrontLeft(0),mecaBackLeft(1),mecaFrontRight(3),mecaBackRight(2), treuil(4),
+verins_BASE(2,3)
 {
 		// arrêt des moteurs
 		mecaFrontLeft.Set(0.0);
 		mecaFrontRight.Set(0.0);
 		mecaBackRight.Set(0.0);
 		mecaBackLeft.Set(0.0);
+		treuil.Set(0.0);
 		// configuration mode TANK
-		verins_AV.Set(frc::DoubleSolenoid::kReverse);
+		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
 		robotMode = MODE_TANK;
 		mode_auto = MODE_ALIGN;
 		// configuration du robotDrive
@@ -64,11 +65,11 @@ int BaseRoulante::Rampe(int x)
 void BaseRoulante::setRobotMode(int mode){
 	if(mode == MODE_TANK){
 		// rentrer les verins
-		verins_AV.Set(frc::DoubleSolenoid::kReverse);
+		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
 	}
 	if(mode == MODE_MECA){
 		// pousser les verins
-		verins_AV.Set(frc::DoubleSolenoid::kForward);
+		verins_BASE.Set(frc::DoubleSolenoid::kForward);
 	}
 	// store robot mode
 	robotMode = mode;
@@ -140,7 +141,7 @@ void BaseRoulante::resetModeAuto(){
 }
 
 
-void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultrasonic* ultrason_G, Ultrasonic* ultrason_D){
+/*void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultrasonic* ultrason_G, Ultrasonic* ultrason_D){
 
 	switch (mode_auto){
 
@@ -175,10 +176,19 @@ void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultras
 
 	case MODE_CENTER :
 		// Si pas de cible dans image: afficher message pour centrage manuel
-		// if(target.lenght()==0)
+		// if(target.lenght()=+=0)
 
 		break;
 	}
+}*/
+void BaseRoulante::mvtTreuil(Joystick*joystick)
+{
+	float tr= (float) joystick->GetThrottle();
+	tr=tr-1;
+	if(tr>0)
+		tr=0;
+	treuil.Set(tr);
+
 }
 
 BaseRoulante::~BaseRoulante() {
