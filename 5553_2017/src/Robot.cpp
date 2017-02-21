@@ -4,15 +4,11 @@
 #include <IterativeRobot.h>
 #include <LiveWindow/LiveWindow.h>
 
-#include <Ultrasonic.h>
-#include <ADXRS450_Gyro.h>
-#include <BaseRoulante.h>
-#include <constantes.h>
+#include "WPILib.h"
 
 #include <Encoder.h>
 
-#include <Bac.h>
-#include <Pince.h>
+
 
 
 #include <thread>
@@ -20,7 +16,7 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
-#include "Pipeline.h"
+
 
 
 class Robot: public frc::IterativeRobot {
@@ -28,40 +24,32 @@ public:
 
 	// déclaration des capteurs et actionneurs
 	Joystick* Joystick1;
-	ADXRS450_Gyro* gyro;
-	Ultrasonic* ultraSon_G;
-	Ultrasonic* ultraSon_D;
-	Encoder* encoder_AV_D;
-	Encoder* encoder_AV_G;
-	Encoder* encoder_AR_D;
-	Encoder* encoder_AR_G;
-	// déclaration des objets
-	BaseRoulante BR;
-	// déclaration des variables
-	Bac* bac;
-	Pince pince;
-	int robotMode ;
+	VictorSP* M1;
+	VictorSP* M2;
+	VictorSP* M3;
+	VictorSP* M4;
+	VictorSP* M5;
+	DoubleSolenoid* verins_1;
+	DoubleSolenoid* verins_2;
+	DoubleSolenoid* verins_3;
+	DoubleSolenoid* verins_4;
 
 	//bidon
 
 	void RobotInit() {
 
 		// initialisation des objets et données
-		gyro = new ADXRS450_Gyro(); 								// à connecter sur SPI
-		gyro->Calibrate(); // initialisation de la position 0 du gyro
-		robotMode = MODE_TANK; // on démarre en mode TANK par défaut
-		Joystick1 = new Joystick(0);								// à connecter sur port USB0
-		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-0 et DIO-1
-		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-2 et DIO-3
-		encoder_AV_D = new Encoder(10, 11);   //TODO mettre des numeros de pins coherents
-		encoder_AV_G = new Encoder(12, 13);   //http://first.wpi.edu/FRC/roborio/release/docs/cpp/classfrc_1_1Encoder.html#ab5552ca2afce5bc0257f73ceb18558cf
-		encoder_AR_D = new Encoder(14, 15);
-		encoder_AR_G = new Encoder(16, 17);
-		//lancement de la video
-		std::thread visionThread(VisionThread);
-		visionThread.detach();
 
-		bac = new Bac();
+		Joystick1 = new Joystick(0);								// à connecter sur port USB0
+		M1= new VictorSP(0);
+		M2= new VictorSP(1);
+		M3= new VictorSP(2);
+		M4= new VictorSP(3);
+		M5= new VictorSP(4);
+		verins_1= new DoubleSolenoid(0,1);
+		verins_2= new DoubleSolenoid(2,3);
+		verins_3= new DoubleSolenoid(4,5);
+		verins_4= new DoubleSolenoid(6,7);
 
 	}
 
@@ -78,123 +66,61 @@ public:
 	}
 
 	void TeleopPeriodic() {
-BR.MonterCorde(Joystick1);
-		// si appui sur bouton depose_roue_auto:
-		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
-			// gestion du depot de roue en mode automatique
-			BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
+/*M1= new VictorSP(0);
+		M2= new VictorSP(1);
+		M3= new VictorSP(2);
+		M4= new VictorSP(3);
+		M5= new VictorSP(4);*/
+		M1->Set(0.9);
+		if(Joystick1->GetRawButton(1)){
+			M1->Set(0.6);
+			M2->Set(0.6);
+			M3->Set(0.6);
+			M4->Set(0.6);
+
 		}
-		else{
+		else
+		{
+			M1->Set(0);
+			M2->Set(0);
+			M3->Set(0);
+			M4->Set(0);
 
-			BR.resetModeAuto();
-
-
-			// Si selection du mode deplacement TANK
-			if(Joystick1->GetRawButton(BTN_TANK))
-			{
-				BR.setRobotMode(MODE_TANK);
-			}
-
-			// Si selection du mode deplacement MECA
-			if(Joystick1->GetRawButton(BTN_MECA))
-			{
-				BR.setRobotMode(MODE_MECA);
-			}
-
-			// Si mouvement du Joystik
-			if (Joystick1->GetX() || Joystick1->GetY() || Joystick1->GetZ() )
-			{
-				BR.mvtJoystick(Joystick1,gyro);
-			}
-
-			//si boutton lever bac
-			if(Joystick1->GetRawButton(BTN_BAC_UP))
-				bac->leverBac();
-
-			//si bouton abaisser bac
-			if(Joystick1->GetRawButton(BTN_BAC_DOWN))
-				bac->rentrerBac();
-
-			if(Joystick1->GetRawButton(BTN_SER_PINCE))
-			    pince.serrerPince();
-
-			if(Joystick1->GetRawButton(BTN_DESSER_PINCE))
-				pince.desserrerPince();
-
-			/*if(Joystick1->GetRawButton(BTN_PINCE_UP))
-				pince.leverPince(bac);*/
-
-			if(Joystick1->GetRawButton(BTN_PINCE_DOWN))
-				pince.abaisserPince();
-
+		}
+		if(Joystick1->GetRawButton(2)){
+			M4->Set(0.9);
+		}
+		else
+		{
+			M4->Set(0);
+		}
+		if(Joystick1->GetRawButton(3)){
+			verins_1->Set(frc::DoubleSolenoid::kForward);
+			verins_2->Set(frc::DoubleSolenoid::kForward);
+			verins_3->Set(frc::DoubleSolenoid::kForward);
+			verins_4->Set(frc::DoubleSolenoid::kForward);
 
 
 
 		}
+		if(Joystick1->GetRawButton(4)){
+			verins_1->Set(frc::DoubleSolenoid::kReverse);
+			verins_2->Set(frc::DoubleSolenoid::kReverse);
+			verins_3->Set(frc::DoubleSolenoid::kReverse);
+			verins_4->Set(frc::DoubleSolenoid::kReverse);
+		}
 
-		// FOR TEST //
-		double angle=gyro->GetAngle();
-		SmartDashboard::PutString("DB/String 0",std::to_string(angle));
-		// END OF TEST
+
 
 	}
 
 	void TestPeriodic() {
 
-		lw->Run();
 
 	}
 
 
-private:
-	frc::LiveWindow* lw = LiveWindow::GetInstance();
 
-	static void VisionThread() {
-		// Get the USB camera from CameraServer
-		cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(); // ("cam0");
-		// Set the resolution
-		camera.SetResolution(640, 480);
-
-		// Get a CvSink. This will capture Mats from the Camera
-		cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-		// Setup a CvSource. This will send images back to the Dashboard
-		cs::CvSource outputStream = CameraServer::GetInstance()->
-				PutVideo("Rectangle", 640, 480);
-
-		// Mats are very memory expensive. Lets reuse this Mat.
-		cv::Mat mat;
-
-		// FRED TEST
-		//Pipeline* myPipe = new Pipeline();
-
-
-		while (true) {
-			// Tell the CvSink to grab a frame from the camera and put it
-			// in the source mat.  If there is an error notify the output.
-			if (cvSink.GrabFrame(mat) == 0) {
-				// Send the output the error.
-				outputStream.NotifyError(cvSink.GetError());
-				// skip the rest of the current iteration
-				continue;
-			}
-			// Put a rectangle on the image
-			rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
-					cv::Scalar(255, 255, 255), 5);
-			// Give the output stream a new image to display
-
-			// FRED MESSAGE
-			/*if(BR.getRobotMode() == MODE_TANK)
-				putText(mat,"Mode TANK",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
-			else
-				putText(mat,"Mode MECANUM",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
-			*/
-
-			outputStream.PutFrame(mat);
-
-			// FRED TEST
-			//myPipe->Process();
-		}
-	}
 };
 
 START_ROBOT_CLASS(Robot)
