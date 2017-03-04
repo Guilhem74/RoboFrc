@@ -70,7 +70,7 @@ public:
 	}
 
 	void TeleopPeriodic() {
-		Sai->SetAngle(-20);
+		//Sai->SetAngle(180);
 		float x= -Joystick1->GetX();
 		float y= -Joystick1->GetY();
 		float z= -Joystick1->GetZ();
@@ -90,7 +90,7 @@ public:
 		}
 
 
-		if(Joystick1->GetRawButton(3)){//Mecanum
+		if(Joystick1->GetRawButton(1)){//Mecanum
 			etat1=1-etat1;
 			if(etat1==0)
 				verins_1->Set(frc::DoubleSolenoid::kForward);
@@ -119,7 +119,7 @@ public:
 			Wait(1);
 
 		}
-		if(Joystick1->GetRawButton(5)){//open close pince
+		if(Joystick1->GetRawButton(3)){//open close pince
 			etat3=1-etat3;
 			if(etat3==0)
 			{
@@ -145,8 +145,7 @@ public:
 				verins_4->Set(frc::DoubleSolenoid::kForward);
 
 			}
-
-
+			else
 			{
 				verins_4->Set(frc::DoubleSolenoid::kReverse);
 
@@ -158,13 +157,9 @@ public:
 		}
 		if(Joystick1->GetRawButton(7)){
 			M5->Set(-0.8);
-
-
-
 		}
 		if(Joystick1->GetRawButton(8)){
 			M5->Set(0);
-
 		}
 
 
