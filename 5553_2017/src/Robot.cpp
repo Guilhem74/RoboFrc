@@ -17,10 +17,10 @@
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
-#include "Pipeline.h"
 
 
 class Robot: public frc::IterativeRobot {
+
 public:
 
 	// déclaration des capteurs et actionneurs
@@ -35,21 +35,23 @@ public:
 	Pince pince;
 	int robotMode ;
 
-	//bidon
-
 	void RobotInit() {
 
 		// initialisation des objets et données
-		gyro = new ADXRS450_Gyro(); 								// à connecter sur SPI
+		gyro = new ADXRS450_Gyro(); // à connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
 		robotMode = MODE_TANK; // on démarre en mode TANK par défaut
 		Joystick1 = new Joystick(0);								// à connecter sur port USB0
 		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-0 et DIO-1
 		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-2 et DIO-3
 
+		// initialisation de la networkTable
+		//table = NetworkTable::GetTable("GRIP/myContoursReport");
+
 		//lancement de la video
-		std::thread visionThread(VisionThread);
+		std::thread visionThread(VisionThread(centerX));
 		visionThread.detach();
+
 
 		bac = new Bac();
 
@@ -117,7 +119,8 @@ public:
 			if(Joystick1->GetRawButton(BTN_PINCE_DOWN))
 				pince.abaisserPince();
 
-
+			/*if(Robot::centerX < 0)
+				printf("hello X");*/
 
 
 		}
@@ -136,67 +139,13 @@ public:
 	}
 
 
-private:
 	frc::LiveWindow* lw = LiveWindow::GetInstance();
+	static int* centerX;
+	static void VisionThread(int *classCenter) {
 
-	static void VisionThread() {
-		// Get the USB camera from CameraServer
-		cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(); // ("cam0");
-		// Set the resolution
-		camera.SetResolution(640, 480);
+			*classCenter=1;
 
-		// Get a CvSink. This will capture Mats from the Camera
-		cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-		// Setup a CvSource. This will send images back to the Dashboard
-		cs::CvSource outputStream = CameraServer::GetInstance()->
-				PutVideo("Rectangle", 640, 480);
-
-		// Mats are very memory expensive. Lets reuse this Mat.
-		cv::Mat mat;
-
-		//Reconnaissance visuelle
-		test_contour* p= new test_contour();
-		std::shared_ptr<NetworkTable> table;
-		table = NetworkTable::GetTable("GRIP/myContoursReport");
-
-		while (true) {
-			// Tell the CvSink to grab a frame from the camera and put it
-			// in the source mat.  If there is an error notify the output.
-			if (cvSink.GrabFrame(mat) == 0) {
-				// Send the output the error.
-				outputStream.NotifyError(cvSink.GetError());
-				// skip the rest of the current iteration
-				continue;
-			}
-			// Put a rectangle on the image
-			rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
-					cv::Scalar(255, 255, 255), 5);
-			// Give the output stream a new image to display
-
-			// FRED MESSAGE
-			/*if(BR.getRobotMode() == MODE_TANK)
-				putText(mat,"Mode TANK",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
-			else
-				putText(mat,"Mode MECANUM",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
-			*/
-
-			outputStream.PutFrame(mat);
-
-			//appel fonction reconnaissance visuelle
-			p->Process(mat);
-						//std::cout << "findBlobsInput = " << std::endl << " " << mat << std::endl << std::endl;
-							/*double[] defaultValue= new double[0];
-							table.GetNumberArray("CenterX",defaultValue);*/
-
-			//tentative lecture des données renvoyées par fonctions de reconnaissance visuelle
-			std::vector<double> arr= table->GetNumberArray("Width", llvm::ArrayRef<double>());
-			std::cout<<"avant boucle"<<endl<<arr.size()<<endl;
-			for(unsigned int i=0;i<arr.size();i++){
-					std::cout<<arr[i]<<""<<endl;
-					std::cout<<"dans boucle"<<endl;
-			}
-		}
-	}
+	} // end of static thread
 };
 
 START_ROBOT_CLASS(Robot)
