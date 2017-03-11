@@ -11,9 +11,8 @@
 #include <DoubleSolenoid.h>
 #include <constantes.h>
 
-
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0,0,1,true),mecaBackLeft(1,2,3,true),mecaFrontRight(3,4,5,true),mecaBackRight(2,6,7,true),cerveau(6),
+mecaFrontLeft(0,0,1),mecaBackLeft(1,2,3),mecaFrontRight(2,4,5),mecaBackRight(3,6,7),
 verins_AV(6,7)
 {
 		// arrêt des moteurs
@@ -97,8 +96,8 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		if (z>=-0.3 && z<=0.3)
 					z=0;
 
-		mecaFrontRight.Set(y +zCoeff *z);
-		mecaBackRight.Set(y+zCoeff *z);
+		mecaFrontRight.Set(-y- zCoeff *z);
+		mecaBackRight.Set(-y- zCoeff *z);
 		mecaFrontLeft.Set(-y+ zCoeff *z);
 		mecaBackLeft.Set(-y+ zCoeff *z);
 
@@ -119,10 +118,10 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		if(z>=-0.3 && z<=0.3)
 			z=0;
 
-		mecaFrontRight.Set(+y+ -x+z);
-		mecaBackRight.Set(y+x+z);
-		mecaFrontLeft.Set(-y -x +z);
-		mecaBackLeft.Set(-y+x+z);
+		mecaFrontRight.Set(-y- x-z);
+		mecaBackRight.Set(-y+x-z);
+		mecaFrontLeft.Set(-y +x +z);
+		mecaBackLeft.Set(-y-x+z);
 
 
 

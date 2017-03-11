@@ -39,11 +39,9 @@ void Pince::leverPince(Bac *monBac)
 {
 
 
-	if(monBac->m_statut==BAC_HAUT)
+
 
 		m_verinLev.Set(frc::DoubleSolenoid::kReverse);
-	else
-		std::cout<<"attention lever le bac avant la pince "<<std::endl;
 
 }
 
