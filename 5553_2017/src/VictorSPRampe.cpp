@@ -63,7 +63,7 @@ float VictorSP_Rampe::signe(float delta)
 //#define RAMPE_DESACTIVER
 void VictorSP_Rampe::SetVitesse(double vitesseConsigne)
 {
-#ifdef RAMPE_DESACTIVER
+/*#ifdef RAMPE_DESACTIVER
 	static bool message_printed=false;
 	if(!message_printed)
 	{
@@ -73,7 +73,7 @@ void VictorSP_Rampe::SetVitesse(double vitesseConsigne)
 	}
 	moteur.Set(power);
 	return;
-#endif
+#endif*/
 	double vitessePrecedente=speed;
 	mettreAJourVitesse();
 
@@ -102,7 +102,7 @@ void VictorSP_Rampe::SetVitesse(double vitesseConsigne)
 
 void VictorSP_Rampe::Set(float power)
 {
-#ifdef RAMPE_DESACTIVER
+/*#ifdef RAMPE_DESACTIVER
 	static bool message_printed=false;
 	if(!message_printed)
 	{
@@ -112,7 +112,7 @@ void VictorSP_Rampe::Set(float power)
 	}
 	moteur.Set(power);
 	return;
-#endif
+#endif*/
 	mettreAJourVitesse();
 	auto t1 = Time::now();
 

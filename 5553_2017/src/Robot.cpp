@@ -26,6 +26,9 @@ struct etape{
 	enum type_etape type;
 };
 
+
+
+
 struct etape Tableau_Actions[] {
 		{100, AVANCER},
 		/*{-45,TOURNER},
@@ -108,7 +111,7 @@ public:
 		}
 
 	void AutonomousInit() override {
-		BR.SetVitesseMax(0.2); // m/s
+		BR.SetVitesseMax(0.1); // m/s
 				std::cout<<" Début autonome"<<std::endl;
 				BR.reset();
 				etape_suivante=0;

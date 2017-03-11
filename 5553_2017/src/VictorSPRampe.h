@@ -52,6 +52,7 @@ private:
 	double ecartVitessePrecedent=0;
 	double coeffAccelerationVitesse = 0.5; // m/s/s ou m/s²
 	double vitesseMax = 10; // m/s
+	double Power;
 };
 
 #endif /* SRC_VICTORSPRAMPE_H_ */

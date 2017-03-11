@@ -13,7 +13,7 @@
 #include "Encoder.h"
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), treuil(4),
+mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), treuil(4),
 verins_BASE(2,3)
 {
 		// arr�t des moteurs
@@ -69,6 +69,7 @@ double BaseRoulante::effectuerConsigne()
 	double erreurD = 0,  erreurG = 0; //erreurs actuelles
 	double sommeErreursG=0, differenceErreursG=0;
 	double sommeErreursD=0, differenceErreursD=0;
+	powerLeft=powerRight=0;
 
 	double moyenneGauche = (mecaFrontLeft.GetDistance() + mecaBackLeft.GetDistance())/2.0f;
 	double moyenneDroite = (mecaFrontRight.GetDistance() + mecaBackRight.GetDistance())/2.0f;
@@ -96,8 +97,8 @@ double BaseRoulante::effectuerConsigne()
 		sommeErreursG+=erreursG[i];
 	}
 
-	float powerLeft=(float)(erreurG*P + D*differenceErreursG + I*sommeErreursG);
-	float powerRight=(float)(-(erreurD*P + D*differenceErreursD + I*sommeErreursD));
+	powerLeft=(float)(erreurG*P + D*differenceErreursG + I*sommeErreursG);
+	powerRight=(float)(-(erreurD*P + D*differenceErreursD + I*sommeErreursD));
 
 	mecaFrontLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
