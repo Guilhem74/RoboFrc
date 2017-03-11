@@ -6,6 +6,7 @@
  */
 
 #include <VictorSPRampe.h>
+#include "Encoder.h"
 
 VictorSP_Rampe::VictorSP_Rampe(
 		uint32_t channel_VictorSP,

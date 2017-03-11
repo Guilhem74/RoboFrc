@@ -8,6 +8,8 @@
 #include <ADXRS450_Gyro.h>
 #include <BaseRoulante.h>
 #include <constantes.h>
+#include "Bac.h"
+#include "Pince.h"
 
 #include <thread>
 #include <CameraServer.h>
@@ -15,30 +17,52 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
 #include "Pipeline.h"
+#include "WPILib.h"
 
+enum type_etape {AUCUN, FIN, AVANCER, TOURNER, TIRER, ATTENDRE};
+
+struct etape{
+	float param;
+	enum type_etape type;
+};
+
+struct etape Tableau_Actions[] {
+		{100, AVANCER},
+		/*{-45,TOURNER},
+		{2000,AVANCER},
+		{-0.8f, TIRER},
+		{2, ATTENDRE},
+		{0, TIRER},*/
+		{0,FIN}
+};
 
 class Robot: public frc::IterativeRobot {
 public:
 
-	// déclaration des capteurs et actionneurs
+	// dï¿½claration des capteurs et actionneurs
 	Joystick* Joystick1;
 	ADXRS450_Gyro* gyro;
 	Ultrasonic* ultraSon_G;
 	Ultrasonic* ultraSon_D;
-	// déclaration des objets
+	// dï¿½claration des objets
 	BaseRoulante BR;
-	// déclaration des variables
+	// dï¿½claration des variables
+	Bac bac;
+	Pince pince;
 	int robotMode ;
+	int etape_actuelle;
+	int etape_suivante;
+	double ecart_roues_largeur_mm = 1100;  //740
 
 	void RobotInit() {
 
-		// initialisation des objets et données
-		gyro = new ADXRS450_Gyro(); 								// à connecter sur SPI
+		// initialisation des objets et donnï¿½es
+		gyro = new ADXRS450_Gyro(); 								// ï¿½ connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
-		robotMode = MODE_TANK; // on démarre en mode TANK par défaut
-		Joystick1 = new Joystick(0);								// à connecter sur port USB0
-		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-0 et DIO-1
-		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-2 et DIO-3
+		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
+		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
+		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// ï¿½ connecter sur DIO-0 et DIO-1
+		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// ï¿½ connecter sur DIO-2 et DIO-3
 
 		//lancement de la video
 		std::thread visionThread(VisionThread);
@@ -46,28 +70,89 @@ public:
 
 	}
 
+	void etapeSuivante()
+		{
+			etape_actuelle=etape_suivante;
+			double angle, distance;
+			switch(Tableau_Actions[etape_actuelle].type)
+			{
+			case AVANCER:
+				BR.parcourirDistance(
+						Tableau_Actions[etape_actuelle].param,
+						Tableau_Actions[etape_actuelle].param);
+				etape_suivante++;
+				break;
+			case TOURNER:
+				angle = Tableau_Actions[etape_actuelle].param;
+				distance = M_PI*ecart_roues_largeur_mm*angle/360;
+				BR.parcourirDistance(
+						-distance,
+						distance);
+				etape_suivante++;
+				break;
+			case TIRER:
+				//rouleau.autonom(Tableau_Actions[etape_actuelle].param);
+				etape_suivante++;
+				break;
+			case ATTENDRE:
+				Wait(Tableau_Actions[etape_actuelle].param);
+				etape_suivante++;
+				break;
+
+			case FIN:
+				return;
+			default:
+				etape_suivante++;
+				return;
+			}
+		}
+
 	void AutonomousInit() override {
+		BR.SetVitesseMax(0.2); // m/s
+				std::cout<<" DÃ©but autonome"<<std::endl;
+				BR.reset();
+				etape_suivante=0;
+				etape_actuelle=0;
+				etapeSuivante();
 
 	}
 
 	void AutonomousPeriodic() {
+		Scheduler::GetInstance()->Run();
+				double erreurMaxi = 0;
+				if(Tableau_Actions[etape_actuelle].type == AVANCER
+					&& Tableau_Actions[etape_actuelle].param < 2000 )
+				{
+					erreurMaxi = 0.1*std::abs(Tableau_Actions[etape_actuelle].param); // 10 % quand infÃ©rieur Ã  2m
+					// todo : timeout
 
+				}
+				else
+				{
+					erreurMaxi = 300; //mm
+				}
+				double delta=0;
+				if( (delta= BR.effectuerConsigne()) < erreurMaxi)
+					etapeSuivante();
 	}
 
 	void TeleopInit() {
-
+		std::cout<<" DÃ©but tÃ©lÃ©opÃ©rÃ©"<<std::endl;
+				BR.reset();
+				BR.SetVitesseMax(30.0); // m/s
 	}
 
 	void TeleopPeriodic() {
 
-		// si appui sur bouton depose_roue_auto:
+// si appui sur bouton depose_roue_auto:
 		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
 			// gestion du depot de roue en mode automatique
-			BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
+			//BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
 		}
 		else{
 
 			BR.resetModeAuto();
+
 
 
 			// Si selection du mode deplacement TANK
@@ -87,6 +172,36 @@ public:
 			{
 				BR.mvtJoystick(Joystick1,gyro);
 			}
+
+			if (Joystick1->GetRawButton(3))
+			{
+				pince.serrerPince();
+				std::cout<<"je serre"<<std::endl;
+			}
+
+
+			if (Joystick1->GetRawButton(4))
+			{
+				pince.desserrerPince();
+				std::cout<<"je deserre"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(5))
+			{
+				pince.leverPince();
+
+				std::cout<<"je leve"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(6))
+			{
+				pince.abaisserPince();
+				std::cout<<"je baisse"<<std::endl;
+
+			}
+BR.mvtTreuil( Joystick1);
 		}
 
 		// FOR TEST //

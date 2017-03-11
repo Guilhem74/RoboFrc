@@ -14,7 +14,7 @@
 #include <math.h>
 
 #define incrementMax 0.2f // acceleration maximale en cas de problème
-#define diametreMillimetre 245 // diamètre en mm, (calcul du pas par tick dans BaseRoulante.cpp)
+#define diametreMillimetre 101 // diamètre en mm, (calcul du pas par tick dans BaseRoulante.cpp)
 
 class VictorSP_Rampe{
 public:
