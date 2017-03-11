@@ -29,6 +29,8 @@ public:
 	ADXRS450_Gyro* gyro;
 	Ultrasonic* ultraSon_G;
 	Ultrasonic* ultraSon_D;
+	Pince pince;
+	Bac bac;
 	// déclaration des objets
 	BaseRoulante BR;
 	// déclaration des variables
@@ -91,6 +93,25 @@ public:
 			{
 				BR.mvtJoystick(Joystick1,gyro);
 			}
+			//si boutton lever bac
+						if(Joystick1->GetRawButton(BTN_BAC_UP))
+							bac.leverBac();
+
+						//si bouton abaisser bac
+						if(Joystick1->GetRawButton(BTN_BAC_DOWN))
+							bac.rentrerBac();
+
+						if(Joystick1->GetRawButton(BTN_SER_PINCE))
+						    pince.serrerPince();
+
+						if(Joystick1->GetRawButton(BTN_DESSER_PINCE))
+							pince.desserrerPince();
+
+						/*if(Joystick1->GetRawButton(BTN_PINCE_UP))
+							pince.leverPince(bac);*/
+
+						if(Joystick1->GetRawButton(BTN_PINCE_DOWN))
+							pince.abaisserPince();
 		}
 
 		// FOR TEST //
@@ -110,60 +131,74 @@ public:
 
 	void TestPeriodic() {
 
-		lw->Run();
-
+	lw->Run();
 	}
+	private:
+		frc::LiveWindow* lw = LiveWindow::GetInstance();
 
+		static void VisionThread() {
+			// Get the USB camera from CameraServer
+			cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(); // ("cam0");
+			// Set the resolution
+			camera.SetResolution(640, 480);
 
-private:
-	frc::LiveWindow* lw = LiveWindow::GetInstance();
+			// Get a CvSink. This will capture Mats from the Camera
+			cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
+			// Setup a CvSource. This will send images back to the Dashboard
+			cs::CvSource outputStream = CameraServer::GetInstance()->
+					PutVideo("Rectangle", 640, 480);
 
-	static void VisionThread() {
-		// Get the USB camera from CameraServer
-		cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(); // ("cam0");
-		// Set the resolution
-		camera.SetResolution(640, 480);
+			// Mats are very memory expensive. Lets reuse this Mat.
+			cv::Mat mat;
 
-		// Get a CvSink. This will capture Mats from the Camera
-		cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-		// Setup a CvSource. This will send images back to the Dashboard
-		cs::CvSource outputStream = CameraServer::GetInstance()->
-				PutVideo("Rectangle", 640, 480);
+			//Reconnaissance visuelle
+			test_contour* p= new test_contour();
+			std::shared_ptr<NetworkTable> table;
+			table = NetworkTable::GetTable("GRIP/myContoursReport");
 
-		// Mats are very memory expensive. Lets reuse this Mat.
-		cv::Mat mat;
+			while (true) {
+				// Tell the CvSink to grab a frame from the camera and put it
+				// in the source mat.  If there is an error notify the output.
+				if (cvSink.GrabFrame(mat) == 0) {
+					// Send the output the error.
+					outputStream.NotifyError(cvSink.GetError());
+					// skip the rest of the current iteration
+					continue;
+				}
+				// Put a rectangle on the image
+				rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
+						cv::Scalar(255, 255, 255), 5);
+				// Give the output stream a new image to display
 
-		// FRED TEST
-		//Pipeline* myPipe = new Pipeline();
+				// FRED MESSAGE
+				/*if(BR.getRobotMode() == MODE_TANK)
+					putText(mat,"Mode TANK",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
+				else
+					putText(mat,"Mode MECANUM",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
+				*/
 
+				outputStream.PutFrame(mat);
 
-		while (true) {
-			// Tell the CvSink to grab a frame from the camera and put it
-			// in the source mat.  If there is an error notify the output.
-			if (cvSink.GrabFrame(mat) == 0) {
-				// Send the output the error.
-				outputStream.NotifyError(cvSink.GetError());
-				// skip the rest of the current iteration
-				continue;
+				//appel fonction reconnaissance visuelle
+				p->Process(mat);
+							//std::cout << "findBlobsInput = " << std::endl << " " << mat << std::endl << std::endl;
+								/*double[] defaultValue= new double[0];
+								table.GetNumberArray("CenterX",defaultValue);*/
+
+				//tentative lecture des données renvoyées par fonctions de reconnaissance visuelle
+				std::vector<double> arr= table->GetNumberArray("Width", llvm::ArrayRef<double>());
+				std::cout<<"avant boucle"<<endl<<arr.size()<<endl;
+				for(unsigned int i=0;i<arr.size();i++){
+						std::cout<<arr[i]<<""<<endl;
+						std::cout<<"dans boucle"<<endl;
+				}
 			}
-			// Put a rectangle on the image
-			rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
-					cv::Scalar(255, 255, 255), 5);
-			// Give the output stream a new image to display
-
-			// FRED MESSAGE
-			/*if(BR.getRobotMode() == MODE_TANK)
-				putText(mat,"Mode TANK",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
-			else
-				putText(mat,"Mode MECANUM",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
-			*/
-
-			outputStream.PutFrame(mat);
-
-			// FRED TEST
-			//myPipe->Process();
 		}
-	}
+
+
+
+
+
 };
 
 START_ROBOT_CLASS(Robot)
