@@ -11,6 +11,7 @@
 
 #include <Encoder.h>
 
+
 #include <Bac.h>
 #include <Pince.h>
 
@@ -47,11 +48,11 @@ public:
 	void RobotInit() {
 
 		// initialisation des objets et données
-		gyro = new ADXRS450_Gyro(); 								// à connecter sur SPI
+		gyro = new ADXRS450_Gyro(); // à connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
 		robotMode = MODE_TANK; // on démarre en mode TANK par défaut
 		Joystick1 = new Joystick(0);								// à connecter sur port USB0
-		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-0 et DIO-1
+		ultraSon_G = new Ultrasonic(8,9,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-0 et DIO-1
 		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-2 et DIO-3
 		encoder_AV_D = new Encoder(10, 11);   //TODO mettre des numeros de pins coherents
 		encoder_AV_G = new Encoder(12, 13);   //http://first.wpi.edu/FRC/roborio/release/docs/cpp/classfrc_1_1Encoder.html#ab5552ca2afce5bc0257f73ceb18558cf
@@ -80,6 +81,8 @@ public:
 	void TeleopPeriodic() {
 BR.MonterCorde(Joystick1);
 		// si appui sur bouton depose_roue_auto:
+		std::cout<<gyro->GetAngle()<<endl;
+		std::cout<<ultraSon_G->GetRangeMM()<<endl;
 		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
 			// gestion du depot de roue en mode automatique
 			BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
@@ -133,8 +136,8 @@ BR.MonterCorde(Joystick1);
 		}
 
 		// FOR TEST //
-		double angle=gyro->GetAngle();
-		SmartDashboard::PutString("DB/String 0",std::to_string(angle));
+		//double angle=gyro->GetAngle();
+		//SmartDashboard::PutString("DB/String 0",std::to_string(angle));
 		// END OF TEST
 
 	}
