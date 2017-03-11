@@ -8,12 +8,10 @@
 #include <ADXRS450_Gyro.h>
 #include <BaseRoulante.h>
 #include <constantes.h>
-
-#include <Encoder.h>
-
 #include <Bac.h>
 #include <Pince.h>
-
+#include <test_contour.h>
+#include <CameraServer.h>
 
 #include <thread>
 #include <CameraServer.h>
@@ -31,18 +29,10 @@ public:
 	ADXRS450_Gyro* gyro;
 	Ultrasonic* ultraSon_G;
 	Ultrasonic* ultraSon_D;
-	Encoder* encoder_AV_D;
-	Encoder* encoder_AV_G;
-	Encoder* encoder_AR_D;
-	Encoder* encoder_AR_G;
 	// déclaration des objets
 	BaseRoulante BR;
 	// déclaration des variables
-	Bac* bac;
-	Pince pince;
 	int robotMode ;
-
-	//bidon
 
 	void RobotInit() {
 
@@ -53,15 +43,10 @@ public:
 		Joystick1 = new Joystick(0);								// à connecter sur port USB0
 		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-0 et DIO-1
 		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// à connecter sur DIO-2 et DIO-3
-		encoder_AV_D = new Encoder(10, 11);   //TODO mettre des numeros de pins coherents
-		encoder_AV_G = new Encoder(12, 13);   //http://first.wpi.edu/FRC/roborio/release/docs/cpp/classfrc_1_1Encoder.html#ab5552ca2afce5bc0257f73ceb18558cf
-		encoder_AR_D = new Encoder(14, 15);
-		encoder_AR_G = new Encoder(16, 17);
+
 		//lancement de la video
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
-
-		bac = new Bac();
 
 	}
 
@@ -78,7 +63,7 @@ public:
 	}
 
 	void TeleopPeriodic() {
-BR.MonterCorde(Joystick1);
+
 		// si appui sur bouton depose_roue_auto:
 		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
 			// gestion du depot de roue en mode automatique
@@ -106,35 +91,19 @@ BR.MonterCorde(Joystick1);
 			{
 				BR.mvtJoystick(Joystick1,gyro);
 			}
-
-			//si boutton lever bac
-			if(Joystick1->GetRawButton(BTN_BAC_UP))
-				bac->leverBac();
-
-			//si bouton abaisser bac
-			if(Joystick1->GetRawButton(BTN_BAC_DOWN))
-				bac->rentrerBac();
-
-			if(Joystick1->GetRawButton(BTN_SER_PINCE))
-			    pince.serrerPince();
-
-			if(Joystick1->GetRawButton(BTN_DESSER_PINCE))
-				pince.desserrerPince();
-
-			/*if(Joystick1->GetRawButton(BTN_PINCE_UP))
-				pince.leverPince(bac);*/
-
-			if(Joystick1->GetRawButton(BTN_PINCE_DOWN))
-				pince.abaisserPince();
-
-
-
-
 		}
 
 		// FOR TEST //
 		double angle=gyro->GetAngle();
 		SmartDashboard::PutString("DB/String 0",std::to_string(angle));
+		//std::cout<<BR.mecaBackLeft.GetDistance()<<endl;
+		std::cout<<BR.mecaFrontLeft.GetDistance()<<endl;
+		//std::cout<<BR.mecaBackRight.GetDistance()<<endl;
+		std::cout<<BR.mecaFrontRight.GetDistance()<<endl;
+//ce test sert a tester les encodeurs de chaques moteurs
+
+
+
 		// END OF TEST
 
 	}
