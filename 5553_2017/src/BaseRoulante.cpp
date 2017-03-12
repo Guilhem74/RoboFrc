@@ -13,8 +13,8 @@
 #include "Encoder.h"
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), treuil(4),
-verins_BASE(2,3)
+mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), treuil(4),
+verins_BASE(0,1)
 {
 		// arr�t des moteurs
 		mecaFrontLeft.Set(0.0);
@@ -55,6 +55,7 @@ void BaseRoulante::parcourirDistance(double distanceGauche, double distanceDroit
 {
 	consigneG=distanceGauche;
 	consigneD=distanceDroite;
+	std::cout<<"consigne :"<<consigneG<<std::endl;
 	for(int i=0;i<Nintegration;i++)
 	{
 		erreursD[i]=erreursG[i]=0;
@@ -76,6 +77,7 @@ double BaseRoulante::effectuerConsigne()
 
 	SmartDashboard::PutNumber("Moyenne Gauche", moyenneGauche);
 	SmartDashboard::PutNumber("Moyenne Droite", moyenneDroite);
+	std::cout<<"moyenne :"<<moyenneGauche<<std::endl;
 
 	erreurG=consigneG - moyenneGauche;
 	differenceErreursG = erreurG-PerreurG;
@@ -100,6 +102,8 @@ double BaseRoulante::effectuerConsigne()
 	powerLeft=(float)(erreurG*P + D*differenceErreursG + I*sommeErreursG);
 	powerRight=(float)(-(erreurD*P + D*differenceErreursD + I*sommeErreursD));
 
+	std::cout<<"powerLeft :"<<powerLeft<<std::endl;
+
 	mecaFrontLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
 	mecaBackRight.Set(powerRight);
@@ -108,42 +112,15 @@ double BaseRoulante::effectuerConsigne()
 	return std::abs(erreurG)+std::abs(erreurD);
 }
 
-int BaseRoulante::Rampe(int x)
-{
-	 auto t1 = Time::now();
-	 deltaT deltaT=t1-t0;
-	 t0=t1;
-	 ms d = std::chrono::duration_cast<ms>(deltaT);
-	 float deltaMillis=float(d.count());
-
-	 int deltaX=x-xprecedent;
-	 xprecedent=x;
-
-	 float increment = (deltaMillis*coeffAcceleration);
-
-
-	 if (deltaX >0)
-	 {
-		  powerActuel=previousPower+increment;
-	 }
-	 else if (deltaX<0)
-	 {
-		  powerActuel=previousPower-increment;
-	 }
-
-	 previousPower=powerActuel;
-
-	 return powerActuel;
-}
 
 void BaseRoulante::setRobotMode(int mode){
 	if(mode == MODE_TANK){
 		// rentrer les verins
-		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
+		verins_BASE.Set(frc::DoubleSolenoid::kForward);
 	}
 	if(mode == MODE_MECA){
 		// pousser les verins
-		verins_BASE.Set(frc::DoubleSolenoid::kForward);
+		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
 	}
 	// store robot mode
 	robotMode = mode;
@@ -161,8 +138,6 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		float x= -((float)joystick->GetX());
 		float y= -((float)joystick->GetY());
 		float z= -((float)joystick->GetZ());
-		count = sampleEncoder->Get();
-		std::cout<<"encodeur :"<<count<<std::endl;
 
 		if (x>=-0.2 && x<=0.2)
 			x=0;

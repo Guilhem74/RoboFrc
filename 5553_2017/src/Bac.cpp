@@ -1,7 +1,7 @@
 /*
  * Bac.cpp
  *
- *  Created on: 18 févr. 2017
+ *  Created on: 18 fï¿½vr. 2017
  *      Author: REBAUDET Thomas
  */
 #include "WPILib.h"
@@ -11,7 +11,7 @@
 #include "constantes.h"
 
 
-Bac::Bac(): m_verinBac(0,1)
+Bac::Bac(): m_verinBac(2,3)
 {
 	// TODO Auto-generated constructor stub
 	m_verinBac.Set(frc::DoubleSolenoid::kReverse);

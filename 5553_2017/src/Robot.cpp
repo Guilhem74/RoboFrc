@@ -204,6 +204,20 @@ public:
 				std::cout<<"je baisse"<<std::endl;
 
 			}
+
+			if (Joystick1->GetRawButton(8))
+			{
+			bac.leverBac();
+			std::cout<<"je baisse"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(9))
+			{
+			bac.rentrerBac();
+			std::cout<<"je baisse"<<std::endl;
+
+			}
 BR.mvtTreuil( Joystick1);
 		}
 

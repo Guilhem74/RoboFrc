@@ -3,11 +3,11 @@
 
 #define BTN_TANK 1
 #define BTN_MECA 2
-#define BTN_DEPOSE_ROUE_AUTO 2
+#define BTN_DEPOSE_ROUE_AUTO 7
 
 #define MODE_APPROACH 0
-#define MODE_ALIGN 1
-#define MODE_CENTER 2
+#define MODE_ALIGN 12
+#define MODE_CENTER 11
 
 /* TABLEAU DE CABLAGE du ROBORIO
  *
