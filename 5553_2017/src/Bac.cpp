@@ -1,9 +1,4 @@
-/*
- * Bac.cpp
- *
- *  Created on: 18 f�vr. 2017
- *      Author: REBAUDET Thomas
- */
+
 #include "WPILib.h"
 #include <DoubleSolenoid.h>
 #include <RobotDrive.h>
@@ -15,7 +10,9 @@ Bac::Bac(): m_verinBac(2,3)
 {
 	// TODO Auto-generated constructor stub
 	m_verinBac.Set(frc::DoubleSolenoid::kReverse);
+
 	m_statut = 0;//BTN_BAC_DOWN;
+
 }
 Bac::~Bac()
 {
@@ -27,6 +24,7 @@ void Bac::leverBac()
 {
 
 	m_verinBac.Set(frc::DoubleSolenoid::kForward);
+
 
 }
 void Bac::rentrerBac()

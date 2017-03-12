@@ -12,9 +12,12 @@
 #include <constantes.h>
 #include "Encoder.h"
 
+
 BaseRoulante::BaseRoulante():
+
 mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), treuil(4),
 verins_BASE(0,1)
+
 {
 		// arr�t des moteurs
 		mecaFrontLeft.Set(0.0);
@@ -23,7 +26,9 @@ verins_BASE(0,1)
 		mecaBackLeft.Set(0.0);
 		treuil.Set(0.0);
 		// configuration mode TANK
+
 		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
+
 		robotMode = MODE_TANK;
 		mode_auto = MODE_ALIGN;
 		// configuration du robotDrive
@@ -34,6 +39,7 @@ verins_BASE(0,1)
 		rot_marge = 10; // en mm
 		rot_speed = 0.3; // entre -1 et 1
 }
+
 
 void BaseRoulante::SetVitesseMax(double max)
 {
@@ -113,14 +119,17 @@ double BaseRoulante::effectuerConsigne()
 }
 
 
+
 void BaseRoulante::setRobotMode(int mode){
 	if(mode == MODE_TANK){
 		// rentrer les verins
+
 		verins_BASE.Set(frc::DoubleSolenoid::kForward);
 	}
 	if(mode == MODE_MECA){
 		// pousser les verins
 		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
+
 	}
 	// store robot mode
 	robotMode = mode;

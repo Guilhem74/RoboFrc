@@ -1,7 +1,7 @@
 /*
  * Pince.h
  *
- *  Created on: 18 févr. 2017
+ *  Created on: 18 fÃ©vr. 2017
  *      Author: REBAUDET Thomas
  */
 #include "WPILib.h"
@@ -21,9 +21,11 @@ public:
 	DoubleSolenoid m_verinSer;
 	void serrerPince();
 	void desserrerPince();
+
 	void leverPince();
     void abaisserPince();
     AnalogInput* limitSwitch;
+
 
 
 

@@ -1,13 +1,18 @@
 #define MODE_TANK 0
 #define MODE_MECA 1
 
+
 #define BTN_TANK 1
 #define BTN_MECA 2
 #define BTN_DEPOSE_ROUE_AUTO 7
 
+
 #define MODE_APPROACH 0
 #define MODE_ALIGN 12
 #define MODE_CENTER 11
+
+#define BAC_HAUT 1
+#define BAC_BAS 0
 
 /* TABLEAU DE CABLAGE du ROBORIO
  *
@@ -51,12 +56,14 @@
 
 /* TABLEAU DE CABLAGE du PCM (Pneumatic Control Module)
  *
+
  * PWM-0	-> verrin BAC_UP
  * PWM-1	-> verrin BAC_DOWN
  * PWM-2	->
  * PWM-3	->
  * PWM-4
  * PWM-5
+
  * PWM-6
  * PWM-7
  *
