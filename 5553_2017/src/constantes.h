@@ -1,19 +1,15 @@
 #define MODE_TANK 0
 #define MODE_MECA 1
 
-#define BTN_TANK 0
-#define BTN_MECA 1
-#define BTN_DEPOSE_ROUE_AUTO 2
-#define BTN_BAC_UP 11
-#define BTN_BAC_DOWN 12
-#define BTN_SER_PINCE 5
-#define BTN_DESSER_PINCE 3
-#define BTN_PINCE_UP 6
-#define BTN_PINCE_DOWN 4
+
+#define BTN_TANK 1
+#define BTN_MECA 2
+#define BTN_DEPOSE_ROUE_AUTO 7
+
 
 #define MODE_APPROACH 0
-#define MODE_ALIGN 1
-#define MODE_CENTER 2
+#define MODE_ALIGN 12
+#define MODE_CENTER 11
 
 #define BAC_HAUT 1
 #define BAC_BAS 0
@@ -60,12 +56,14 @@
 
 /* TABLEAU DE CABLAGE du PCM (Pneumatic Control Module)
  *
- * PWM-0	-> verrin BASE_UP
- * PWM-1	-> verrin BASE_DOWN
- * PWM-2	-> verrin BAC_UP
- * PWM-3	-> verrin BAC_DOWN
- * PWM-4    ->
- * PWM-5    ->
+
+ * PWM-0	-> verrin BAC_UP
+ * PWM-1	-> verrin BAC_DOWN
+ * PWM-2	->
+ * PWM-3	->
+ * PWM-4
+ * PWM-5
+
  * PWM-6
  * PWM-7
  *

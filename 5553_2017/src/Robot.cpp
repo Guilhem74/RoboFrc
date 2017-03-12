@@ -8,17 +8,14 @@
 #include <ADXRS450_Gyro.h>
 #include <BaseRoulante.h>
 #include <constantes.h>
-<<<<<<< HEAD
+#include "Bac.h"
+#include "Pince.h"
 
-#include <Encoder.h>
-
-
-=======
->>>>>>> origin/master
 #include <Bac.h>
 #include <Pince.h>
 #include <test_contour.h>
 #include <CameraServer.h>
+
 
 #include <thread>
 #include <CameraServer.h>
@@ -26,32 +23,57 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
 #include "Pipeline.h"
+#include "WPILib.h"
 
+enum type_etape {AUCUN, FIN, AVANCER, TOURNER, TIRER, ATTENDRE};
+
+struct etape{
+	float param;
+	enum type_etape type;
+};
+
+
+
+
+struct etape Tableau_Actions[] {
+		{100, AVANCER},
+		/*{-45,TOURNER},
+		{2000,AVANCER},
+		{-0.8f, TIRER},
+		{2, ATTENDRE},
+		{0, TIRER},*/
+		{0,FIN}
+};
 
 class Robot: public frc::IterativeRobot {
 public:
 
-	// d�claration des capteurs et actionneurs
+	// dï¿½claration des capteurs et actionneurs
 	Joystick* Joystick1;
 	ADXRS450_Gyro* gyro;
 	Ultrasonic* ultraSon_G;
 	Ultrasonic* ultraSon_D;
-	Pince pince;
-	Bac bac;
-	// d�claration des objets
+
+
 	BaseRoulante BR;
-	// d�claration des variables
+	// dï¿½claration des variables
+	Bac bac;
+	Pince pince;
 	int robotMode ;
+	int etape_actuelle;
+	int etape_suivante;
+	double ecart_roues_largeur_mm = 1100;  //740
 
 	void RobotInit() {
 
-		// initialisation des objets et donn�es
-		gyro = new ADXRS450_Gyro(); // � connecter sur SPI
+		// initialisation des objets et donnï¿½es
+		gyro = new ADXRS450_Gyro(); 								// ï¿½ connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
-		robotMode = MODE_TANK; // on d�marre en mode TANK par d�faut
-		Joystick1 = new Joystick(0);								// � connecter sur port USB0
-		ultraSon_G = new Ultrasonic(8,9,Ultrasonic::kMilliMeters); 	// � connecter sur DIO-0 et DIO-1
-		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// � connecter sur DIO-2 et DIO-3
+		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
+		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
+		ultraSon_G = new Ultrasonic(0,1,Ultrasonic::kMilliMeters); 	// ï¿½ connecter sur DIO-0 et DIO-1
+		ultraSon_D = new Ultrasonic(2,3,Ultrasonic::kMilliMeters); 	// ï¿½ connecter sur DIO-2 et DIO-3
+
 
 		//lancement de la video
 		std::thread visionThread(VisionThread);
@@ -59,30 +81,93 @@ public:
 
 	}
 
+	void etapeSuivante()
+		{
+			etape_actuelle=etape_suivante;
+			double angle, distance;
+			switch(Tableau_Actions[etape_actuelle].type)
+			{
+			case AVANCER:
+				BR.parcourirDistance(
+						Tableau_Actions[etape_actuelle].param,
+						Tableau_Actions[etape_actuelle].param);
+				etape_suivante++;
+				break;
+			case TOURNER:
+				angle = Tableau_Actions[etape_actuelle].param;
+				distance = M_PI*ecart_roues_largeur_mm*angle/360;
+				BR.parcourirDistance(
+						-distance,
+						distance);
+				etape_suivante++;
+				break;
+			case TIRER:
+				//rouleau.autonom(Tableau_Actions[etape_actuelle].param);
+				etape_suivante++;
+				break;
+			case ATTENDRE:
+				Wait(Tableau_Actions[etape_actuelle].param);
+				etape_suivante++;
+				break;
+
+			case FIN:
+				return;
+			default:
+				etape_suivante++;
+				return;
+			}
+		}
+
 	void AutonomousInit() override {
+		BR.SetVitesseMax(0.1); // m/s
+				std::cout<<" DÃ©but autonome"<<std::endl;
+				BR.reset();
+				etape_suivante=0;
+				etape_actuelle=0;
+				etapeSuivante();
 
 	}
 
 	void AutonomousPeriodic() {
+		Scheduler::GetInstance()->Run();
+				double erreurMaxi = 0;
+				if(Tableau_Actions[etape_actuelle].type == AVANCER
+					&& Tableau_Actions[etape_actuelle].param < 2000 )
+				{
+					erreurMaxi = 0.1*std::abs(Tableau_Actions[etape_actuelle].param); // 10 % quand infÃ©rieur Ã  2m
+					// todo : timeout
 
+				}
+				else
+				{
+					erreurMaxi = 300; //mm
+				}
+				double delta=0;
+				if( (delta= BR.effectuerConsigne()) < erreurMaxi)
+					etapeSuivante();
 	}
 
 	void TeleopInit() {
-
+		std::cout<<" DÃ©but tÃ©lÃ©opÃ©rÃ©"<<std::endl;
+				BR.reset();
+				BR.SetVitesseMax(30.0); // m/s
 	}
 
 	void TeleopPeriodic() {
 
+
+// si appui sur bouton depose_roue_auto:
+
 		// si appui sur bouton depose_roue_auto:
-		std::cout<<gyro->GetAngle()<<endl;
-		std::cout<<ultraSon_G->GetRangeMM()<<endl;
+
 		if(Joystick1->GetRawButton(BTN_DEPOSE_ROUE_AUTO)){
 			// gestion du depot de roue en mode automatique
-			BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
+			//BR.deposeRoueAuto(Joystick1,gyro,ultraSon_G,ultraSon_D);
 		}
 		else{
 
 			BR.resetModeAuto();
+
 
 
 			// Si selection du mode deplacement TANK
@@ -102,41 +187,51 @@ public:
 			{
 				BR.mvtJoystick(Joystick1,gyro);
 			}
-			//si boutton lever bac
-						if(Joystick1->GetRawButton(BTN_BAC_UP))
-							bac.leverBac();
 
-						//si bouton abaisser bac
-						if(Joystick1->GetRawButton(BTN_BAC_DOWN))
-							bac.rentrerBac();
+			if (Joystick1->GetRawButton(3))
+			{
+				pince.serrerPince();
+				std::cout<<"je serre"<<std::endl;
+			}
 
-						if(Joystick1->GetRawButton(BTN_SER_PINCE))
-						    pince.serrerPince();
 
-						if(Joystick1->GetRawButton(BTN_DESSER_PINCE))
-							pince.desserrerPince();
+			if (Joystick1->GetRawButton(4))
+			{
+				pince.desserrerPince();
+				std::cout<<"je deserre"<<std::endl;
 
-						/*if(Joystick1->GetRawButton(BTN_PINCE_UP))
-							pince.leverPince(bac);*/
+			}
 
-						if(Joystick1->GetRawButton(BTN_PINCE_DOWN))
-							pince.abaisserPince();
-		}
+			if (Joystick1->GetRawButton(5))
+			{
+				pince.leverPince();
 
-		// FOR TEST //
-<<<<<<< HEAD
-		//double angle=gyro->GetAngle();
-		//SmartDashboard::PutString("DB/String 0",std::to_string(angle));
-		// END OF TEST
-=======
-		double angle=gyro->GetAngle();
-		SmartDashboard::PutString("DB/String 0",std::to_string(angle));
-		//std::cout<<BR.mecaBackLeft.GetDistance()<<endl;
-		std::cout<<BR.mecaFrontLeft.GetDistance()<<endl;
-		//std::cout<<BR.mecaBackRight.GetDistance()<<endl;
-		std::cout<<BR.mecaFrontRight.GetDistance()<<endl;
-//ce test sert a tester les encodeurs de chaques moteurs
->>>>>>> origin/master
+				std::cout<<"je leve"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(6))
+			{
+				pince.abaisserPince();
+				std::cout<<"je baisse"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(8))
+			{
+			bac.leverBac();
+			std::cout<<"je baisse"<<std::endl;
+
+			}
+
+			if (Joystick1->GetRawButton(9))
+			{
+			bac.rentrerBac();
+			std::cout<<"je baisse"<<std::endl;
+
+			}
+BR.mvtTreuil( Joystick1);
+
 
 
 
@@ -200,7 +295,7 @@ public:
 								/*double[] defaultValue= new double[0];
 								table.GetNumberArray("CenterX",defaultValue);*/
 
-				//tentative lecture des donn�es renvoy�es par fonctions de reconnaissance visuelle
+				//tentative lecture des données renvoyées par fonctions de reconnaissance visuelle
 				std::vector<double> arr= table->GetNumberArray("Width", llvm::ArrayRef<double>());
 				std::cout<<"avant boucle"<<endl<<arr.size()<<endl;
 				for(unsigned int i=0;i<arr.size();i++){
