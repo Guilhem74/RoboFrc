@@ -14,7 +14,6 @@
 
 
 BaseRoulante::BaseRoulante():
-
 mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), treuil(4),
 verins_BASE(0,1)
 

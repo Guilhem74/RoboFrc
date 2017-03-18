@@ -42,6 +42,7 @@ double VictorSP_Rampe::signe(double delta)
 
 double VictorSP_Rampe::GetDistance()
 {
+	std::cout<<"codeur"<<codeur.GetDistance()<<endl;
 	return codeur.GetDistance();
 }
 

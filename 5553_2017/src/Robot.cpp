@@ -62,6 +62,9 @@ public:
 	int robotMode ;
 	int etape_actuelle;
 	int etape_suivante;
+	float position_x = 0;
+	float position_y = 0;
+
 	double ecart_roues_largeur_mm = 1100;  //740
 
 	void RobotInit() {
@@ -76,8 +79,8 @@ public:
 
 
 		//lancement de la video
-		std::thread visionThread(VisionThread);
-		visionThread.detach();
+//		std::thread visionThread(VisionThread);
+//		visionThread.detach();
 
 	}
 
@@ -128,7 +131,26 @@ public:
 
 	}
 
+	void asservissement() {
+		double droite,gauche,angle,distance;
+
+		droite = BR.mecaFrontRight.GetDistance();
+		gauche = BR.mecaFrontLeft.GetDistance();
+		BR.mecaFrontRight.Reset();
+		BR.mecaFrontLeft.Reset();
+		angle = gyro->GetAngle();
+		gyro->Reset();
+		distance = (droite+gauche)/2;
+		position_x += distance*cos(angle);
+		position_y += distance*sin(angle);
+		//std::cout<<"codeurD :"<<droite<<"; codeurG :"<<gauche<<"; angle :"<<angle<<"; distance :"<<distance<<endl;
+		std::cout<<"positionx :"<<position_x<<"; positiony :"<<position_y<<endl;
+	}
+
+
 	void AutonomousPeriodic() {
+
+
 		Scheduler::GetInstance()->Run();
 				double erreurMaxi = 0;
 				if(Tableau_Actions[etape_actuelle].type == AVANCER
@@ -154,7 +176,7 @@ public:
 	}
 
 	void TeleopPeriodic() {
-
+		asservissement();
 
 // si appui sur bouton depose_roue_auto:
 
@@ -238,7 +260,7 @@ BR.mvtTreuil( Joystick1);
 		// END OF TEST
 
 	}
-
+/*
 	void TestPeriodic() {
 
 	lw->Run();
@@ -278,15 +300,15 @@ BR.mvtTreuil( Joystick1);
 				// Put a rectangle on the image
 				rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
 						cv::Scalar(255, 255, 255), 5);
-				// Give the output stream a new image to display
+				// Give the output stream a new image to display*/
 
-				// FRED MESSAGE
+				// FRED MESSAGE*/
 				/*if(BR.getRobotMode() == MODE_TANK)
 					putText(mat,"Mode TANK",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
 				else
 					putText(mat,"Mode MECANUM",cv::Point(140,140),cv::FONT_HERSHEY_PLAIN,1,cv::Scalar(255, 255, 255));
 				*/
-
+		/*
 				outputStream.PutFrame(mat);
 
 				//appel fonction reconnaissance visuelle
@@ -296,7 +318,7 @@ BR.mvtTreuil( Joystick1);
 								table.GetNumberArray("CenterX",defaultValue);*/
 
 				//tentative lecture des données renvoyées par fonctions de reconnaissance visuelle
-				std::vector<double> arr= table->GetNumberArray("Width", llvm::ArrayRef<double>());
+		/*		std::vector<double> arr= table->GetNumberArray("Width", llvm::ArrayRef<double>());
 				std::cout<<"avant boucle"<<endl<<arr.size()<<endl;
 				for(unsigned int i=0;i<arr.size();i++){
 						std::cout<<arr[i]<<""<<endl;
@@ -305,9 +327,9 @@ BR.mvtTreuil( Joystick1);
 			}
 		}
 
+*/
 
-
-
+	}
 
 };
 
