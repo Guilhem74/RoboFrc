@@ -39,7 +39,7 @@ public:
 	Encoder* enc2;
 	Encoder* enc3;
 	Encoder* enc4;
-	//Ultrasonic *ultra; // creates the ultra object
+	Ultrasonic *ultra; // creates the ultra object
 
 	void RobotInit() {
 		Ai= new AnalogInput(1);//Fin de course
@@ -84,6 +84,8 @@ public:
 				enc4->SetDistancePerPulse(5);
 				enc4->SetReverseDirection(true);
 				enc4->SetSamplesToAverage(7);
+				ultra = new Ultrasonic(8, 9); // assigns ultra to be an ultrasonic sensor which uses DigitalOutput 1 for the echo pulse and DigitalInput 1 for the trigger pulse
+						ultra->SetAutomaticMode(true); // turns on automatic mode
 	}
 
 	void AutonomousInit() override {
@@ -190,9 +192,10 @@ public:
 		if(Joystick1->GetRawButton(8)){
 			M5->Set(0);
 		}
-						//		int range = ultra->GetRangeInches(); // reads the range on the ultrasonic sensor
-		//		std::cout<<"Range:";
-		//		std::cout<<range<<std::endl;
+							double range = ultra->GetRangeMM(); // reads the range on the ultrasonic sensor
+				std::cout<<"Range:";
+			std::cout<<range<<std::endl;
+#if 1
 		std::cout<<"Encodeur01: ";
 						std::cout<<enc1->Get();
 						std::cout<<"  Encodeur02: ";
@@ -201,6 +204,7 @@ public:
 						std::cout<<enc3->Get();
 						std::cout<<"  Encodeur04: ";
 						std::cout<<enc4->Get()<<std::endl;
+#endif
 
 
 	}
