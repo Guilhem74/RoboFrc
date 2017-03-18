@@ -62,8 +62,8 @@ public:
 	int robotMode ;
 	int etape_actuelle;
 	int etape_suivante;
-	float position_x = 0;
-	float position_y = 0;
+	double position_x = 0;
+	double position_y = 0;
 
 	double ecart_roues_largeur_mm = 1100;  //740
 
@@ -143,7 +143,7 @@ public:
 		distance = (droite+gauche)/2;
 		position_x += distance*cos(angle);
 		position_y += distance*sin(angle);
-		//std::cout<<"codeurD :"<<droite<<"; codeurG :"<<gauche<<"; angle :"<<angle<<"; distance :"<<distance<<endl;
+		std::cout<<"codeurD :"<<droite<<"; codeurG :"<<gauche<<"; angle :"<<angle<<"; distance :"<<distance<<endl;
 		std::cout<<"positionx :"<<position_x<<"; positiony :"<<position_y<<endl;
 	}
 
