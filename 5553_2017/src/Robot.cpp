@@ -40,12 +40,12 @@ public:
 	Encoder* enc3;
 	Encoder* enc4;
 	Ultrasonic *ultra; // creates the ultra object
-
+	Servo *exampleServo;
 	void RobotInit() {
 		Ai= new AnalogInput(1);//Fin de course
 
 		// initialisation des objets et données
-		Sai =new Servo(5);//Servo moteur
+
 		 etat1=1;
 		 etat2=1;
 		 etat3=1;
@@ -56,10 +56,13 @@ public:
 		M3= new VictorSP(2);
 		M4= new VictorSP(3);
 		M5= new VictorSP(4);
+		exampleServo = new Servo(5);
+
 		verins_1= new DoubleSolenoid(0,1);
 		verins_2= new DoubleSolenoid(2,3);
 		verins_3= new DoubleSolenoid(4,5);
 		verins_4= new DoubleSolenoid(6,7);
+#if 0
 		enc1 = new Encoder(0, 1, false, Encoder::EncodingType::k4X);
 				enc1->SetMaxPeriod(.1);
 				enc1->SetMinRate(10);
@@ -84,6 +87,7 @@ public:
 				enc4->SetDistancePerPulse(5);
 				enc4->SetReverseDirection(true);
 				enc4->SetSamplesToAverage(7);
+#endif
 				ultra = new Ultrasonic(8, 9); // assigns ultra to be an ultrasonic sensor which uses DigitalOutput 1 for the echo pulse and DigitalInput 1 for the trigger pulse
 						ultra->SetAutomaticMode(true); // turns on automatic mode
 	}
@@ -101,6 +105,16 @@ public:
 	}
 
 	void TeleopPeriodic() {
+		static int i=0;
+		if(i==180)
+		{
+			i=0;
+		}
+		else
+			i++;
+	exampleServo->SetAngle(0);
+		std::cout<<i<<std::endl;
+		Wait(1);
 		//Sai->SetAngle(180);
 		float x= -Joystick1->GetX();
 		float y= -Joystick1->GetY();
@@ -192,10 +206,11 @@ public:
 		if(Joystick1->GetRawButton(8)){
 			M5->Set(0);
 		}
-							double range = ultra->GetRangeMM(); // reads the range on the ultrasonic sensor
+			double range = ultra->GetRangeMM(); // reads the range on the ultrasonic sensor
+
 				std::cout<<"Range:";
 			std::cout<<range<<std::endl;
-#if 1
+#if 0
 		std::cout<<"Encodeur01: ";
 						std::cout<<enc1->Get();
 						std::cout<<"  Encodeur02: ";
