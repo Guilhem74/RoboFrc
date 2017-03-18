@@ -35,6 +35,11 @@ public:
 	int etat3;
 	int etat4;
 	//bidon
+	Encoder* enc1;
+	Encoder* enc2;
+	Encoder* enc3;
+	Encoder* enc4;
+	//Ultrasonic *ultra; // creates the ultra object
 
 	void RobotInit() {
 		Ai= new AnalogInput(1);//Fin de course
@@ -55,6 +60,30 @@ public:
 		verins_2= new DoubleSolenoid(2,3);
 		verins_3= new DoubleSolenoid(4,5);
 		verins_4= new DoubleSolenoid(6,7);
+		enc1 = new Encoder(0, 1, false, Encoder::EncodingType::k4X);
+				enc1->SetMaxPeriod(.1);
+				enc1->SetMinRate(10);
+				enc1->SetDistancePerPulse(5);
+				enc1->SetReverseDirection(true);
+				enc1->SetSamplesToAverage(7);
+				enc2 = new Encoder(2, 3, false, Encoder::EncodingType::k4X);
+				enc2->SetMaxPeriod(.1);
+				enc2->SetMinRate(10);
+				enc2->SetDistancePerPulse(5);
+				enc2->SetReverseDirection(true);
+				enc2->SetSamplesToAverage(7);
+				enc3 = new Encoder(4, 5, false, Encoder::EncodingType::k4X);
+				enc3->SetMaxPeriod(.1);
+				enc3->SetMinRate(10);
+				enc3->SetDistancePerPulse(5);
+				enc3->SetReverseDirection(true);
+				enc3->SetSamplesToAverage(7);
+				enc4 = new Encoder(6, 7, false, Encoder::EncodingType::k4X);
+				enc4->SetMaxPeriod(.1);
+				enc4->SetMinRate(10);
+				enc4->SetDistancePerPulse(5);
+				enc4->SetReverseDirection(true);
+				enc4->SetSamplesToAverage(7);
 	}
 
 	void AutonomousInit() override {
@@ -161,6 +190,17 @@ public:
 		if(Joystick1->GetRawButton(8)){
 			M5->Set(0);
 		}
+						//		int range = ultra->GetRangeInches(); // reads the range on the ultrasonic sensor
+		//		std::cout<<"Range:";
+		//		std::cout<<range<<std::endl;
+		std::cout<<"Encodeur01: ";
+						std::cout<<enc1->Get();
+						std::cout<<"  Encodeur02: ";
+						std::cout<<enc2->Get();
+						std::cout<<"  Encodeur03: ";
+						std::cout<<enc3->Get();
+						std::cout<<"  Encodeur04: ";
+						std::cout<<enc4->Get()<<std::endl;
 
 
 	}
