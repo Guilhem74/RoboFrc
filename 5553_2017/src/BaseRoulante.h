@@ -33,7 +33,7 @@ public:
 	void mvtJoystick(Joystick*, ADXRS450_Gyro* );
 	void deposeRoueAuto(Joystick* , ADXRS450_Gyro*, Ultrasonic*,Ultrasonic*);
 	void resetModeAuto();
-	void mvtTreuil(	Joystick* joystick);
+
 	void parcourirDistance(double distanceGauche, double distanceDroite);
 	double effectuerConsigne();
 	void SetVitesseMax(double max);
@@ -41,13 +41,10 @@ public:
 
 	int Rampe(int x);
 	VictorSP_Rampe mecaFrontLeft;
+	VictorSP_Rampe mecaBackLeft;
 	VictorSP_Rampe mecaFrontRight;
 	VictorSP_Rampe mecaBackRight;
-	VictorSP_Rampe mecaBackLeft;
-	VictorSP treuil;
-	Encoder *sampleEncoder;
 	DoubleSolenoid verins_BASE;
-	Joystick* joystick;
 	double approach_speed;
 	double align_dist;
 	double align_marge;

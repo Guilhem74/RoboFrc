@@ -10,21 +10,17 @@
 #include <BaseRoulante.h>
 #include <DoubleSolenoid.h>
 #include <constantes.h>
-#include "Encoder.h"
+
 
 
 BaseRoulante::BaseRoulante():
-
-mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), treuil(4),
-verins_BASE(0,1)
-
+mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(0,1)
 {
 		// arr�t des moteurs
 		mecaFrontLeft.Set(0.0);
 		mecaFrontRight.Set(0.0);
 		mecaBackRight.Set(0.0);
 		mecaBackLeft.Set(0.0);
-		treuil.Set(0.0);
 		// configuration mode TANK
 
 		verins_BASE.Set(frc::DoubleSolenoid::kReverse);
@@ -164,10 +160,10 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 
 		//R2D2->ArcadeDrive(joystick);
 		//R2D2->ArcadeDrive(joystick,frc::Joystick::AxisType::kZAxis,joystick,frc::Joystick::AxisType::kYAxis);
-	};
+	}
 
 	if(robotMode == MODE_MECA){
-		double angle=gyro->GetAngle();
+
 		float x= -((float)joystick->GetX());
 		float y= -((float)joystick->GetY());
 		float z= -((float)joystick->GetZ());
@@ -193,7 +189,7 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		std::cout<<"z: "<<z<<std::endl;
 
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
-	};
+	}
 }
 
 void BaseRoulante::resetModeAuto(){
@@ -201,55 +197,6 @@ void BaseRoulante::resetModeAuto(){
 }
 
 
-/*void BaseRoulante::deposeRoueAuto(Joystick* joystick, ADXRS450_Gyro*gyro, Ultrasonic* ultrason_G, Ultrasonic* ultrason_D){
-
-	switch (mode_auto){
-
-	case MODE_APPROACH :
-		// tant que pas assez pres du mur: on avance
-		if((ultrason_G->GetRangeMM() > (align_dist+align_marge)) && (ultrason_D->GetRangeMM() > (align_dist+align_marge)))
-			R2D2->SetLeftRightMotorOutputs(approach_speed,-approach_speed);
-		else{
-		// sinon on coupe les moteurs et on passe en mode alignement
-			R2D2->StopMotor();
-			mode_auto=MODE_ALIGN;
-		}
-		break;
-
-	case MODE_ALIGN :
-		// on passe en mode MECANUM si pas dej� fait
-		if(robotMode == MODE_TANK)
-			setRobotMode(MODE_MECA);
-		// Si le capteur gauche est sup�rieur � capteur droit: on tourne � droite
-		if (ultrason_G->GetRangeMM() > (ultrason_D->GetRangeMM() + rot_marge))
-			R2D2->MecanumDrive_Cartesian(0,0,rot_speed);
-		else
-			//Si le capteur gauche est inferieur � capteur droit: on tourne � gauche
-			if (ultrason_G->GetRangeMM() < (ultrason_D->GetRangeMM() - rot_marge))
-				R2D2->MecanumDrive_Cartesian(0,0,-rot_speed);
-			else{
-				// si on est dans la zone de marge: on passe en mode centrage
-				R2D2->StopMotor();
-				mode_auto=MODE_CENTER;
-			}
-		break;
-
-	case MODE_CENTER :
-		// Si pas de cible dans image: afficher message pour centrage manuel
-		// if(target.lenght()=+=0)
-
-		break;
-	}
-}*/
-void BaseRoulante::mvtTreuil(Joystick*joystick)
-{
-	float tr= (float) joystick->GetThrottle();
-	tr=tr-1;
-	if(tr>0)
-		tr=0;
-	treuil.Set(tr);
-
-}
 
 BaseRoulante::~BaseRoulante() {
 	// TODO Auto-generated destructor stub
