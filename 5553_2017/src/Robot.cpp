@@ -68,7 +68,8 @@ public:
 		Treuil->Set(0);
 		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
-
+		std::thread visionThread(VisionThread);
+		visionThread.detach();
 
 
 	}
@@ -184,6 +185,19 @@ public:
 
 
 	}
+	static void VisionThread() {
+			// Get the USB camera from CameraServer
+		cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
+					// Set the resolution
+					camera.SetResolution(640, 480);
+					camera.SetFPS(20);
+					cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
+								camera2.SetResolution(160, 120);
+								camera2.SetFPS(5);
+					// Get a CvSink. This will capture Mats from the Camera
+					cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
+		}
+
 
 };
 START_ROBOT_CLASS(Robot)
