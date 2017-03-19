@@ -67,7 +67,7 @@ void BaseRoulante::parcourirDistance(double distanceGauche, double distanceDroit
 	reset();
 }
 
-double BaseRoulante::effectuerConsigne()
+double BaseRoulante::effectuerConsigne(double P, double I, double D)
 {
 	double erreurD = 0,  erreurG = 0; //erreurs actuelles
 	double sommeErreursG=0, differenceErreursG=0;
@@ -101,7 +101,7 @@ double BaseRoulante::effectuerConsigne()
 		sommeErreursG+=erreursG[i];
 	}
 
-	powerLeft=(float)(erreurG*P + D*differenceErreursG + I*sommeErreursG);
+	powerLeft=(float)(erreurG*P /*+ D*differenceErreursG + I*sommeErreursG*/);
 	powerRight=-powerLeft;
 
 	std::cout<<"powerLeft :"<<powerLeft<<std::endl;

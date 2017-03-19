@@ -35,7 +35,7 @@ public:
 	void resetModeAuto();
 
 	void parcourirDistance(double distanceGauche, double distanceDroite);
-	double effectuerConsigne();
+	double effectuerConsigne(double P, double I, double D);
 	void SetVitesseMax(double max);
 	void reset();
 
@@ -56,7 +56,6 @@ public:
 	double consigneD=0, consigneG=0;
 	double erreursD[Nintegration]={0};
 	double erreursG[Nintegration]={0};
-	double P=0.1, I=0.000010, D=0.7;
 	double PerreurD, PerreurG; // erreurs précédentes
 	float powerLeft;
 	float powerRight;

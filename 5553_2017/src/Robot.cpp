@@ -24,7 +24,7 @@ struct etape{
 };
 
 struct etape Tableau_Actions[] {
-		{100, AVANCER},
+		{150*4500/110, AVANCER},
 		/*{-45,TOURNER},
 		{2000,AVANCER},
 		{-0.8f, TIRER},
@@ -47,6 +47,7 @@ public:
 	DoubleSolenoid* Pince_Horizontal;
 	DoubleSolenoid* Bac;
 	VictorSP* Treuil;
+	SmartDashboard Dd;
 
 	//P
 	double throttle=0;
@@ -54,6 +55,10 @@ public:
 	int etape_actuelle;
 	int etape_suivante;
 	double ecart_roues_largeur_mm = 1100;  //740
+	double P_Value;
+	double I_Value;
+	double D_Value;
+
 
 	void RobotInit() {
 
@@ -70,6 +75,10 @@ public:
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
+		P_Value = Dd.GetNumber("P_Value", 0.00010);
+		I_Value = Dd.GetNumber("I_Value", 0.00010);
+		D_Value = Dd.GetNumber("D_Value", 0.00010);
+
 
 
 	}
@@ -136,8 +145,8 @@ public:
 					erreurMaxi = 300; //mm
 				}
 				double delta=0;
-				if( (delta= BR.effectuerConsigne()) < erreurMaxi)
-					etapeSuivante();
+				if( (delta= BR.effectuerConsigne(P_Value, I_Value, D_Value)) < erreurMaxi)
+					std::cout<<"fini"<<std::endl;
 	}
 
 	void TeleopInit() {
