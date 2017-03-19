@@ -42,12 +42,12 @@ public:
 	Joystick* Joystick1;
 	ADXRS450_Gyro* gyro;
 	BaseRoulante BR;
-
+	Servo* Plaque_Zeppelin;
 	DoubleSolenoid* Pince_Vertical;
 	DoubleSolenoid* Pince_Horizontal;
 	DoubleSolenoid* Bac;
 	VictorSP* Treuil;
-
+	Ultrasonic *Ultrason_Avant; // creates the ultra object
 	//P
 	double throttle=0;
 	int robotMode ;
@@ -71,7 +71,8 @@ public:
 		// initialisation des objets et donnï¿½es
 		gyro = new ADXRS450_Gyro(); 								// ï¿½ connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
-
+		Plaque_Zeppelin =new Servo(5);
+		Plaque_Zeppelin->SetAngle(0);
 		Pince_Vertical= new DoubleSolenoid(2,3);
 		Pince_Horizontal= new DoubleSolenoid(6,7);
 		Bac= new DoubleSolenoid(4,5);
@@ -124,7 +125,7 @@ public:
 
 	void AutonomousInit() override {
 		BR.SetVitesseMax(0.1); // m/s
-				std::cout<<" DÃ©but autonome"<<std::endl;
+				std::cout<<" D�but autonome"<<std::endl;
 				BR.reset();
 				etape_suivante=0;
 				etape_actuelle=0;
@@ -185,15 +186,19 @@ public:
 					if (Joystick1->GetRawButton(6))
 						Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
 
-					if (Joystick1->GetRawButton(8))
+					if (Joystick1->GetRawButton(7))
 							Bac->Set(frc::DoubleSolenoid::kForward);
 
-					if (Joystick1->GetRawButton(9))
+					if (Joystick1->GetRawButton(8))
 							Bac->Set(frc::DoubleSolenoid::kReverse);
 
 					if((throttle=(Joystick1->GetThrottle()-1))<=0)
-						Treuil->Set(throttle);
-
+						Plaque_Zeppelin->SetAngle(throttle*45*-1);
+						//Treuil->Set(throttle);
+					if (Joystick1->GetRawButton(11))
+						Plaque_Zeppelin->SetAngle(0);
+					if (Joystick1->GetRawButton(12))
+						Plaque_Zeppelin->SetAngle(90);
 
 	}
 
