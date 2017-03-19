@@ -53,7 +53,7 @@ public:
 	int robotMode ;
 	int etape_actuelle;
 	int etape_suivante;
-	double ecart_roues_largeur_mm = 1100;  //740
+	double ecart_roues_largeur_mm = 730;  //740
 	double P_Value;
 	double I_Value;
 	double D_Value;
