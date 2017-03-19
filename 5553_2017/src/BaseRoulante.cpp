@@ -73,7 +73,6 @@ void BaseRoulante::setConsigne(double Longueur, double Angle)
 double BaseRoulante::PID_ANGLE(double Angle, double Angle_gyro)
 {//Met a jour les valeurs de consigne + raz les valeurs d'intégration de l'assert
 	double erreur=Angle-Angle_gyro;
-	std::cout<<"Erreur :"<<erreur<<std::endl;
 	return P_COEFF_A*erreur;
 
 }
@@ -87,15 +86,16 @@ double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
 
 int BaseRoulante::effectuerConsigne(double Angle_gyro)
 {
+	counteur_Fin++;
 	double moyenneGauche = (mecaFrontLeft.GetDistance() + mecaBackLeft.GetDistance())/2.0f;
 	double moyenneDroite = (mecaFrontRight.GetDistance() + mecaBackRight.GetDistance())/2.0f;
 
-
 	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
 	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneDroite)+PID_ANGLE(Consigne_Ang,Angle_gyro));
-	if(abs(powerRight)<TOLERANCE&&abs(powerLeft)<TOLERANCE)
+	if(counteur_Fin>TOLERANCE)
 		return 1;
 	std::cout<<"PowerL : "<<powerLeft<<std::endl;
+	std::cout<<"powerRight : "<<powerRight<<std::endl;
 	mecaFrontLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
 	mecaBackRight.Set(powerRight);

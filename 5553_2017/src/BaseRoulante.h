@@ -52,6 +52,7 @@ public:
 	double align_marge;
 	double rot_speed;
 	double rot_marge;
+	 int counteur_Fin=0;
 	int count;
 	static const int Nintegration=80;
 	int indiceIntegration=0;

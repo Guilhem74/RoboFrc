@@ -25,8 +25,14 @@ struct etape{
 };
 
 struct etape Tableau_Actions[] {
-		{150*17,0, AVANCER},
+		/*{180*17,0, AVANCER},
 		{0,0,PINCE_H},
+		{0*17,0, AVANCER},
+		{0,0,PINCE_V},*/
+		{180*17,90, AVANCER},
+		{90*17,45, AVANCER},
+		{0,0,PINCE_H},
+		{150*17,45, AVANCER},
 		{0,0,PINCE_V},
 		/*{2000,AVANCER},
 		{-0.8f, TIRER},
@@ -87,17 +93,14 @@ public:
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
-		Plaque_Zeppelin->SetAngle(48);
-		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
-		frc::Wait(5);
-		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-		Bac->Set(frc::DoubleSolenoid::kReverse);
+
 
 
 	}
 
 	void etapeSuivante()
 		{
+		BR.counteur_Fin=0;
 			etape_actuelle=etape_suivante;
 			double angle, distance;
 			switch(Tableau_Actions[etape_actuelle].type)
@@ -113,14 +116,15 @@ public:
 				break;
 			case PINCE_H:
 				Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
+				frc::Wait(0.5);
+				std::cout<<"PAss�"<<std::endl;
 				etape_suivante++;
-				break;
-			case ATTENDRE:
-				Wait(Tableau_Actions[etape_actuelle].param);
-				etape_suivante++;
+				etapeSuivante();
 				break;
 			case PINCE_V:
-				Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+				Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+				etape_suivante++;
+				etapeSuivante();
 				break;
 			case FIN:
 				return;
@@ -137,34 +141,25 @@ public:
 				BR.reset();
 				BR.setRobotMode(MODE_TANK);
 				BR.setConsigne(0,0);
-//17
-				Plaque_Zeppelin->SetAngle(48);
 				etape_suivante=0;
 				etape_actuelle=0;
 				etapeSuivante();
+						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+						frc::Wait(1);
+						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+						Bac->Set(frc::DoubleSolenoid::kReverse);
 
 	}
 
 	void AutonomousPeriodic() {
-		/*Scheduler::GetInstance()->Run();
-				double erreurMaxi = 0;
-				if(Tableau_Actions[etape_actuelle].type == AVANCER
-					&& Tableau_Actions[etape_actuelle].param < 2000 )
-				{
-					erreurMaxi = 0.1*std::abs(Tableau_Actions[etape_actuelle].param); // 10 % quand infÃ©rieur Ã  2m
-					// todo : timeout
 
-				}
-				else
+		if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 				{
-					erreurMaxi = 300; //mm
-				}
-				double delta=0;
-				if( (delta= BR.effectuerConsigne()) < erreurMaxi)
-					etapeSuivante();*/
-		if(BR.effectuerConsigne(gyro->GetAngle()))
-			etapeSuivante();
+			std::cout<<" Avancement"<<std::endl;
 
+					if(BR.effectuerConsigne(gyro->GetAngle())==1)
+						etapeSuivante();
+				}
 		Plaque_Zeppelin->SetAngle(48);
 
 	}
