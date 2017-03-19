@@ -54,7 +54,18 @@ public:
 	int etape_actuelle;
 	int etape_suivante;
 	double ecart_roues_largeur_mm = 1100;  //740
-
+	static void VisionThread() {
+				// Get the USB camera from CameraServer
+			cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
+						// Set the resolution
+						camera.SetResolution(640, 480);
+						camera.SetFPS(20);
+						cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
+									camera2.SetResolution(160, 120);
+									camera2.SetFPS(5);
+						// Get a CvSink. This will capture Mats from the Camera
+						cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
+			}
 	void RobotInit() {
 
 		// initialisation des objets et donnï¿½es
@@ -185,18 +196,7 @@ public:
 
 
 	}
-	static void VisionThread() {
-			// Get the USB camera from CameraServer
-		cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
-					// Set the resolution
-					camera.SetResolution(640, 480);
-					camera.SetFPS(20);
-					cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
-								camera2.SetResolution(160, 120);
-								camera2.SetFPS(5);
-					// Get a CvSink. This will capture Mats from the Camera
-					cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-		}
+
 
 
 };
