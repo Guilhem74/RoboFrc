@@ -101,7 +101,7 @@ double BaseRoulante::effectuerConsigne(double P, double I, double D)
 		sommeErreursG+=erreursG[i];
 	}
 
-	powerLeft=(float)(erreurG*P /*+ D*differenceErreursG + I*sommeErreursG*/);
+	powerLeft=(float)(-(erreurG*P /*+ D*differenceErreursG + I*sommeErreursG*/));
 	powerRight=-powerLeft;
 
 	std::cout<<"powerLeft :"<<powerLeft<<std::endl;

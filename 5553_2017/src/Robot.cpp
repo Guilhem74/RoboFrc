@@ -42,12 +42,11 @@ public:
 	Joystick* Joystick1;
 	ADXRS450_Gyro* gyro;
 	BaseRoulante BR;
-
+	Servo* plaque_Zepplin;
 	DoubleSolenoid* Pince_Vertical;
 	DoubleSolenoid* Pince_Horizontal;
 	DoubleSolenoid* Bac;
 	VictorSP* Treuil;
-	SmartDashboard Dd;
 
 	//P
 	double throttle=0;
@@ -69,15 +68,17 @@ public:
 		Pince_Vertical= new DoubleSolenoid(2,3);
 		Pince_Horizontal= new DoubleSolenoid(6,7);
 		Bac= new DoubleSolenoid(4,5);
+		plaque_Zepplin=new Servo(5);
+		plaque_Zepplin->SetAngle(5.0);
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
 		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
-		P_Value = Dd.GetNumber("P_Value", 0.00010);
-		I_Value = Dd.GetNumber("I_Value", 0.00010);
-		D_Value = Dd.GetNumber("D_Value", 0.00010);
+		P_Value = SmartDashboard::GetNumber	("P_Value", 0.00010);
+		I_Value = SmartDashboard::GetNumber ("I_Value", 0.00010);
+		D_Value = SmartDashboard::GetNumber	("D_Value", 0.00010);
 
 
 
@@ -191,6 +192,12 @@ public:
 
 					if((throttle=(Joystick1->GetThrottle()-1))<=0)
 						Treuil->Set(throttle);
+
+					if(Joystick1->GetRawButton(12))
+						plaque_Zepplin->SetAngle(5.0);
+
+					if(Joystick1->GetRawButton(11))
+						plaque_Zepplin->SetAngle(90.0);
 
 
 	}
