@@ -102,7 +102,7 @@ double BaseRoulante::effectuerConsigne()
 	}
 
 	powerLeft=(float)(erreurG*P + D*differenceErreursG + I*sommeErreursG);
-	powerRight=(float)(-(erreurD*P + D*differenceErreursD + I*sommeErreursD));
+	powerRight=-powerLeft;
 
 	std::cout<<"powerLeft :"<<powerLeft<<std::endl;
 
@@ -111,7 +111,7 @@ double BaseRoulante::effectuerConsigne()
 	mecaBackRight.Set(powerRight);
 	mecaBackLeft.Set(powerLeft);
 
-	return std::abs(erreurG)+std::abs(erreurD);
+	return std::abs(erreurG);
 }
 
 
