@@ -16,21 +16,23 @@
 #include <opencv2/core/types.hpp>
 #include "WPILib.h"
 
-enum type_etape {AUCUN, FIN, AVANCER, TOURNER, TIRER, ATTENDRE};
+enum type_etape {AUCUN, FIN, AVANCER, TOURNER, ATTENDRE,PINCE_H,BAC,PINCE_V};
 
 struct etape{
 	float param;
+	float param2;
 	enum type_etape type;
 };
 
 struct etape Tableau_Actions[] {
-		{100, AVANCER},
-		/*{-45,TOURNER},
-		{2000,AVANCER},
+		{150*17,0, AVANCER},
+		{0,0,PINCE_H},
+		{0,0,PINCE_V},
+		/*{2000,AVANCER},
 		{-0.8f, TIRER},
 		{2, ATTENDRE},
 		{0, TIRER},*/
-		{0,FIN}
+		{0,0,FIN}
 };
 
 
@@ -48,7 +50,9 @@ public:
 	DoubleSolenoid* Bac;
 	VictorSP* Treuil;
 	Ultrasonic *Ultrason_Avant; // creates the ultra object
+	Preferences *Val;
 	//P
+	int Mode_Servo=0;
 	double throttle=0;
 	int robotMode ;
 	int etape_actuelle;
@@ -71,17 +75,23 @@ public:
 		// initialisation des objets et donnï¿½es
 		gyro = new ADXRS450_Gyro(); 								// ï¿½ connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
+
 		Plaque_Zeppelin =new Servo(5);
 		Plaque_Zeppelin->SetAngle(0);
-		Pince_Vertical= new DoubleSolenoid(2,3);
+		Pince_Vertical= new DoubleSolenoid(4,5);
 		Pince_Horizontal= new DoubleSolenoid(6,7);
-		Bac= new DoubleSolenoid(4,5);
+		Bac= new DoubleSolenoid(2,3);
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
 		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
+		Plaque_Zeppelin->SetAngle(48);
+		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+		frc::Wait(5);
+		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+		Bac->Set(frc::DoubleSolenoid::kReverse);
 
 
 	}
@@ -93,40 +103,42 @@ public:
 			switch(Tableau_Actions[etape_actuelle].type)
 			{
 			case AVANCER:
-				BR.parcourirDistance(
-						Tableau_Actions[etape_actuelle].param,
-						Tableau_Actions[etape_actuelle].param);
+				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
+				std::cout<<"Etape Avancer"<<std::endl;
 				etape_suivante++;
 				break;
 			case TOURNER:
-				angle = Tableau_Actions[etape_actuelle].param;
-				distance = M_PI*ecart_roues_largeur_mm*angle/360;
-				BR.parcourirDistance(
-						-distance,
-						distance);
+				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
 				break;
-			case TIRER:
-				//rouleau.autonom(Tableau_Actions[etape_actuelle].param);
+			case PINCE_H:
+				Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
 				etape_suivante++;
 				break;
 			case ATTENDRE:
 				Wait(Tableau_Actions[etape_actuelle].param);
 				etape_suivante++;
 				break;
-
+			case PINCE_V:
+				Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+				break;
 			case FIN:
 				return;
 			default:
 				etape_suivante++;
 				return;
 			}
+			BR.reset();
 		}
 
 	void AutonomousInit() override {
 		BR.SetVitesseMax(0.1); // m/s
 				std::cout<<" D�but autonome"<<std::endl;
 				BR.reset();
+				BR.setRobotMode(MODE_TANK);
+				BR.setConsigne(0,0);
+//17
+				Plaque_Zeppelin->SetAngle(48);
 				etape_suivante=0;
 				etape_actuelle=0;
 				etapeSuivante();
@@ -134,7 +146,7 @@ public:
 	}
 
 	void AutonomousPeriodic() {
-		Scheduler::GetInstance()->Run();
+		/*Scheduler::GetInstance()->Run();
 				double erreurMaxi = 0;
 				if(Tableau_Actions[etape_actuelle].type == AVANCER
 					&& Tableau_Actions[etape_actuelle].param < 2000 )
@@ -149,13 +161,20 @@ public:
 				}
 				double delta=0;
 				if( (delta= BR.effectuerConsigne()) < erreurMaxi)
-					etapeSuivante();
+					etapeSuivante();*/
+		if(BR.effectuerConsigne(gyro->GetAngle()))
+			etapeSuivante();
+
+		Plaque_Zeppelin->SetAngle(48);
+
 	}
 
 	void TeleopInit() {
 		std::cout<<" DÃ©but tÃ©lÃ©opÃ©rÃ©"<<std::endl;
 				BR.reset();
 				BR.SetVitesseMax(30.0); // m/s
+
+
 	}
 
 	void TeleopPeriodic() {
@@ -193,12 +212,21 @@ public:
 							Bac->Set(frc::DoubleSolenoid::kReverse);
 
 					if((throttle=(Joystick1->GetThrottle()-1))<=0)
-						Plaque_Zeppelin->SetAngle(throttle*45*-1);
-						//Treuil->Set(throttle);
+						Treuil->Set(throttle);
 					if (Joystick1->GetRawButton(11))
-						Plaque_Zeppelin->SetAngle(0);
+						Mode_Servo=0;
 					if (Joystick1->GetRawButton(12))
-						Plaque_Zeppelin->SetAngle(90);
+						Mode_Servo=1;
+
+					if(Mode_Servo==0)
+					{
+						Plaque_Zeppelin->SetAngle(48);
+
+					}
+					else
+					{
+						Plaque_Zeppelin->SetAngle(145);
+					}
 
 	}
 

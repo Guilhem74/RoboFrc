@@ -14,7 +14,7 @@
 
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(0,1)
+mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(0,1)
 {
 		// arrï¿½t des moteurs
 		mecaFrontLeft.Set(0.0);
@@ -36,6 +36,12 @@ mecaFrontLeft(0,0,1,0),mecaBackLeft(1,2,3,0),mecaFrontRight(3,4,5,0),mecaBackRig
 		rot_speed = 0.3; // entre -1 et 1
 }
 
+void BaseRoulante::SetPID(double P_val,double I_val, double D_val)
+{
+	P=P_val;
+	I=I_val;
+	D=D_val;
+}
 
 void BaseRoulante::SetVitesseMax(double max)
 {
@@ -53,65 +59,49 @@ void BaseRoulante::reset()
 	mecaFrontRight.Reset();
 }
 
-void BaseRoulante::parcourirDistance(double distanceGauche, double distanceDroite)
-{
-	consigneG=distanceGauche;
-	consigneD=distanceDroite;
-	std::cout<<"consigne :"<<consigneG<<std::endl;
-	for(int i=0;i<Nintegration;i++)
-	{
-		erreursD[i]=erreursG[i]=0;
-	}
-	PerreurG=distanceGauche;
-	PerreurD=distanceDroite;
+void BaseRoulante::setConsigne(double Longueur, double Angle)
+{//Met a jour les valeurs de consigne + raz les valeurs d'intégration de l'assert
+	Consigne_Dist=Longueur;
+	Consigne_Ang=Angle;
+	sommeErreursG=0;
+	sommeErreursD=0;
+	Erreur_Precedente_G=0;
+	Erreur_Precedente_D=0;
 	reset();
 }
 
-double BaseRoulante::effectuerConsigne()
-{
-	double erreurD = 0,  erreurG = 0; //erreurs actuelles
-	double sommeErreursG=0, differenceErreursG=0;
-	double sommeErreursD=0, differenceErreursD=0;
-	powerLeft=powerRight=0;
+double BaseRoulante::PID_ANGLE(double Angle, double Angle_gyro)
+{//Met a jour les valeurs de consigne + raz les valeurs d'intégration de l'assert
+	double erreur=Angle-Angle_gyro;
+	std::cout<<"Erreur :"<<erreur<<std::endl;
+	return P_COEFF_A*erreur;
 
+}
+double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
+{//Met a jour les valeurs de consigne + raz les valeurs d'intégration de l'assert
+	double erreur=consigne_L-valeur_Encodeur;
+
+	return P_COEFF_L*erreur;
+
+}
+
+int BaseRoulante::effectuerConsigne(double Angle_gyro)
+{
 	double moyenneGauche = (mecaFrontLeft.GetDistance() + mecaBackLeft.GetDistance())/2.0f;
 	double moyenneDroite = (mecaFrontRight.GetDistance() + mecaBackRight.GetDistance())/2.0f;
 
-	SmartDashboard::PutNumber("Moyenne Gauche", moyenneGauche);
-	SmartDashboard::PutNumber("Moyenne Droite", moyenneDroite);
-	std::cout<<"moyenne :"<<moyenneGauche<<std::endl;
 
-	erreurG=consigneG - moyenneGauche;
-	differenceErreursG = erreurG-PerreurG;
-	PerreurG=erreurG;
-	erreursG[indiceIntegration]=erreurG;
-
-	erreurD=consigneD - moyenneDroite;
-	differenceErreursD = erreurD-PerreurD;
-	PerreurD=erreurD;
-	erreursD[indiceIntegration]=erreurD;
-
-	indiceIntegration++;
-	if(indiceIntegration>=Nintegration)
-		indiceIntegration=0;
-
-	for(int i=0;i<Nintegration;i++)
-	{
-		sommeErreursD+=erreursD[i];
-		sommeErreursG+=erreursG[i];
-	}
-
-	powerLeft=(float)(erreurG*P + D*differenceErreursG + I*sommeErreursG);
-	powerRight=(float)(-(erreurD*P + D*differenceErreursD + I*sommeErreursD));
-
-	std::cout<<"powerLeft :"<<powerLeft<<std::endl;
-
+	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
+	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneDroite)+PID_ANGLE(Consigne_Ang,Angle_gyro));
+	if(abs(powerRight)<TOLERANCE&&abs(powerLeft)<TOLERANCE)
+		return 1;
+	std::cout<<"PowerL : "<<powerLeft<<std::endl;
 	mecaFrontLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
 	mecaBackRight.Set(powerRight);
 	mecaBackLeft.Set(powerLeft);
 
-	return std::abs(erreurG)+std::abs(erreurD);
+	return 0;
 }
 
 

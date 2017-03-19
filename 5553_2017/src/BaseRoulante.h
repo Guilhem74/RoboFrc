@@ -34,11 +34,13 @@ public:
 	void deposeRoueAuto(Joystick* , ADXRS450_Gyro*, Ultrasonic*,Ultrasonic*);
 	void resetModeAuto();
 
-	void parcourirDistance(double distanceGauche, double distanceDroite);
-	double effectuerConsigne();
+	void setConsigne(double Longueur, double Angle);
+	int effectuerConsigne(double Angle_gyro);
 	void SetVitesseMax(double max);
+	void SetPID(double P_val,double I_val, double D_val);
 	void reset();
-
+	double PID_ANGLE(double Angle, double Angle_gyro);
+	double PID_DISTANCE(double consigne_L, double valeur_Encodeur);
 	int Rampe(int x);
 	VictorSP_Rampe mecaFrontLeft;
 	VictorSP_Rampe mecaBackLeft;
@@ -53,11 +55,13 @@ public:
 	int count;
 	static const int Nintegration=80;
 	int indiceIntegration=0;
-	double consigneD=0, consigneG=0;
-	double erreursD[Nintegration]={0};
-	double erreursG[Nintegration]={0};
-	double P=0.1, I=0.000010, D=0.7;
-	double PerreurD, PerreurG; // erreurs précédentes
+	double Consigne_Dist=0, Consigne_Ang=0;
+	double erreursD=0;
+	double erreursG=0;
+	double sommeErreursG=0;
+		double sommeErreursD=0;
+	double P=0.00015, I=0.0, D=0.0;
+	double Erreur_Precedente_G=0, Erreur_Precedente_D=0; // erreurs précédentes
 	float powerLeft;
 	float powerRight;
 

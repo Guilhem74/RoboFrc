@@ -13,6 +13,9 @@
 
 #define BAC_HAUT 1
 #define BAC_BAS 0
+#define P_COEFF_A 0.009
+#define P_COEFF_L 0.00020
+#define TOLERANCE 0
 
 /* TABLEAU DE CABLAGE du ROBORIO
  *
