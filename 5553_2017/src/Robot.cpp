@@ -15,7 +15,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/types.hpp>
 #include "WPILib.h"
-
+extern float P_COEFF_A;//0.017
 enum type_etape {AUCUN, FIN, AVANCER, TOURNER, ATTENDRE,PINCE_H,BAC,PINCE_V};
 
 struct etape{
@@ -23,44 +23,37 @@ struct etape{
 	float param2;
 	enum type_etape type;
 };
-
+#if 0//Millieu
 struct etape Tableau_Actions[] {
-<<<<<<< HEAD
-		{150*4500/110, AVANCER},
-		/*{-45,TOURNER},
-		{2000,AVANCER},
-=======
-		/*{180*17,0, AVANCER},
+		{190*34,0, AVANCER},
 		{0,0,PINCE_H},
-		{0*17,0, AVANCER},
-		{0,0,PINCE_V},*/
-		{180*17,90, AVANCER},
-		{90*17,45, AVANCER},
-		{0,0,PINCE_H},
-		{150*17,45, AVANCER},
+		{-50*34,0, AVANCER},
 		{0,0,PINCE_V},
-		/*{2000,AVANCER},
->>>>>>> origin/master
-		{-0.8f, TIRER},
-		{2, ATTENDRE},
-		{0, TIRER},*/
 		{0,0,FIN}
 };
-
+#endif
+#if 1//Gauche boiler
+struct etape Tableau_Actions[] {
+		{150*34,0, AVANCER},
+		{0,60, TOURNER},
+		{200*34,60, AVANCER},
+		{0,0,PINCE_H},
+		{-50*34,60, AVANCER},
+		{0,0,PINCE_V},
+		{0,0,FIN}
+};
+#endif
 
 
 class Robot: public frc::IterativeRobot {
 public:
 
+
 	// dï¿½claration des capteurs et actionneurs
 	Joystick* Joystick1;
 	ADXRS450_Gyro* gyro;
 	BaseRoulante BR;
-<<<<<<< HEAD
-	Servo* plaque_Zepplin;
-=======
-	Servo* Plaque_Zeppelin;
->>>>>>> origin/master
+	Servo* Plaque_Zeppelin; // servo min/max : 48/150
 	DoubleSolenoid* Pince_Vertical;
 	DoubleSolenoid* Pince_Horizontal;
 	DoubleSolenoid* Bac;
@@ -73,14 +66,6 @@ public:
 	int robotMode ;
 	int etape_actuelle;
 	int etape_suivante;
-<<<<<<< HEAD
-	double ecart_roues_largeur_mm = 730;  //740
-	double P_Value;
-	double I_Value;
-	double D_Value;
-
-
-=======
 	double ecart_roues_largeur_mm = 1100;  //740
 	static void VisionThread() {
 				// Get the USB camera from CameraServer
@@ -94,7 +79,6 @@ public:
 						// Get a CvSink. This will capture Mats from the Camera
 						cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
 			}
->>>>>>> origin/master
 	void RobotInit() {
 
 		// initialisation des objets et donnï¿½es
@@ -102,26 +86,18 @@ public:
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
 
 		Plaque_Zeppelin =new Servo(5);
-		Plaque_Zeppelin->SetAngle(0);
+		Plaque_Zeppelin->SetAngle(60);
 		Pince_Vertical= new DoubleSolenoid(4,5);
 		Pince_Horizontal= new DoubleSolenoid(6,7);
-<<<<<<< HEAD
-		Bac= new DoubleSolenoid(4,5);
-		plaque_Zepplin=new Servo(5);
-		plaque_Zepplin->SetAngle(5.0);
-=======
 		Bac= new DoubleSolenoid(2,3);
->>>>>>> origin/master
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
 		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
-		P_Value = SmartDashboard::GetNumber	("P_Value", 0.00010);
-		I_Value = SmartDashboard::GetNumber ("I_Value", 0.00010);
-		D_Value = SmartDashboard::GetNumber	("D_Value", 0.00010);
-
+		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
 
 
 
@@ -138,15 +114,17 @@ public:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				std::cout<<"Etape Avancer"<<std::endl;
 				etape_suivante++;
+				P_COEFF_A=0.04;
 				break;
 			case TOURNER:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
+				P_COEFF_A=0.017;
 				break;
 			case PINCE_H:
 				Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
 				frc::Wait(0.5);
-				std::cout<<"PAss�"<<std::endl;
+				std::cout<<"PAss�"<<std::endl;
 				etape_suivante++;
 				etapeSuivante();
 				break;
@@ -165,22 +143,47 @@ public:
 		}
 
 	void AutonomousInit() override {
-		BR.SetVitesseMax(0.1); // m/s
-				std::cout<<" D�but autonome"<<std::endl;
-				BR.reset();
-				BR.setRobotMode(MODE_TANK);
-				BR.setConsigne(0,0);
-				etape_suivante=0;
-				etape_actuelle=0;
-				etapeSuivante();
-						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
-						frc::Wait(1);
-						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-						Bac->Set(frc::DoubleSolenoid::kReverse);
+		bool autoLeft = SmartDashboard::GetBoolean("DB/Button 1",false);
+		bool autoFront = SmartDashboard::GetBoolean("DB/Button 2",true);
+		bool autoRight = SmartDashboard::GetBoolean("DB/Button 3",false);
 
+
+		if(autoLeft){
+			//by Guilhem
+			BR.SetVitesseMax(0.1); // m/s
+			std::cout<<" D�but autonome"<<std::endl;
+			BR.reset();
+			BR.setRobotMode(MODE_TANK);
+			BR.setConsigne(0,0);
+			etape_suivante=0;
+			etape_actuelle=0;
+			etapeSuivante();
+			Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+			Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+			Bac->Set(frc::DoubleSolenoid::kReverse);
+		}
+		else if(autoFront){
+
+		}
+		else if(autoRight){
+			//by fred (adapted from Guilhem)
+			BR.SetVitesseMax(0.1); // m/s
+			std::cout<<" Début autonome"<<std::endl;
+			BR.reset();
+			BR.setRobotMode(MODE_TANK);
+			BR.setConsigne(0,0);
+			etape_suivante=0;
+			etape_actuelle=0;
+			etapeSuivante();
+			Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+			Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+			Bac->Set(frc::DoubleSolenoid::kReverse);
+
+		}
 	}
 
 	void AutonomousPeriodic() {
+
 
 		if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 				{
@@ -189,14 +192,8 @@ public:
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}
-<<<<<<< HEAD
-				double delta=0;
-				if( (delta= BR.effectuerConsigne(P_Value, I_Value, D_Value)) < erreurMaxi)
-					std::cout<<"fini"<<std::endl;
-=======
 		Plaque_Zeppelin->SetAngle(48);
 
->>>>>>> origin/master
 	}
 
 	void TeleopInit() {
@@ -208,8 +205,18 @@ public:
 	}
 
 	void TeleopPeriodic() {
+		//
+		//char* value = SmartDashboard::GetString("DB/String 0",0);
+		//std::cout<<"ma valeur: "<<value<<std::endl;
+		//sSmartDashboard::PutString("DB/String 5",std::to_string(value));
 
-					if(Joystick1->GetRawButton(BTN_TANK))
+
+		double slider = SmartDashboard::GetNumber("DB/Slider 0",0)/5*180;
+		std::cout<<"mon slider: "<<slider<<std::endl;
+		SmartDashboard::PutString("DB/String 6",std::to_string(slider));
+
+
+		if(Joystick1->GetRawButton(BTN_TANK))
 					{
 						BR.setRobotMode(MODE_TANK);
 					}
@@ -229,11 +236,15 @@ public:
 					if (Joystick1->GetRawButton(4))
 						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
 
-					if (Joystick1->GetRawButton(5))
+					if (Joystick1->GetRawButton(5)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+						SmartDashboard::PutBoolean("DB/LED 0",true);
+					}
 
-					if (Joystick1->GetRawButton(6))
+					if (Joystick1->GetRawButton(6)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+						SmartDashboard::PutBoolean("DB/LED 0",false);
+					}
 
 					if (Joystick1->GetRawButton(7))
 							Bac->Set(frc::DoubleSolenoid::kForward);
@@ -248,24 +259,16 @@ public:
 					if (Joystick1->GetRawButton(12))
 						Mode_Servo=1;
 
-<<<<<<< HEAD
-					if(Joystick1->GetRawButton(12))
-						plaque_Zepplin->SetAngle(5.0);
-
-					if(Joystick1->GetRawButton(11))
-						plaque_Zepplin->SetAngle(90.0);
-
-=======
 					if(Mode_Servo==0)
 					{
-						Plaque_Zeppelin->SetAngle(48);
+						// servo min/max : 48/150
+						Plaque_Zeppelin->SetAngle(slider);
 
 					}
 					else
 					{
-						Plaque_Zeppelin->SetAngle(145);
+						Plaque_Zeppelin->SetAngle(slider);
 					}
->>>>>>> origin/master
 
 	}
 

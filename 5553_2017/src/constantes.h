@@ -1,3 +1,5 @@
+#ifndef CONSTANTEH
+#define CONSTANTEH
 #define MODE_TANK 0
 #define MODE_MECA 1
 
@@ -13,9 +15,9 @@
 
 #define BAC_HAUT 1
 #define BAC_BAS 0
-#define P_COEFF_A 0.009
-#define P_COEFF_L 0.00020
-#define TOLERANCE 250
+
+#define P_COEFF_L 0.00015
+#define TOLERANCE 150
 /* TABLEAU DE CABLAGE du ROBORIO
  *
  * 	RS-232	->
@@ -70,4 +72,5 @@
  * PWM-7
  *
  */
+#endif
 
