@@ -95,7 +95,7 @@ public:
 	DoubleSolenoid* Bac;
 	VictorSP* Treuil;
 	Ultrasonic *Ultrason_Avant; // creates the ultra object
-	Preferences *Val;
+	Preferences *prefs;
 	//P
 	int Mode_Servo=0;
 	double throttle=0;
@@ -131,7 +131,6 @@ public:
 		Plaque_Zeppelin->SetAngle(60);
 		Pince_Vertical= new DoubleSolenoid(4,5);
 		Pince_Horizontal= new DoubleSolenoid(6,7);
-
 		Bac= new DoubleSolenoid(2,3);
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
@@ -141,6 +140,7 @@ public:
 		visionThread.detach();
 		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
 		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+		prefs = Preferences::GetInstance();
 
 	}
 
@@ -196,6 +196,7 @@ public:
 		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
 		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
 		Bac->Set(frc::DoubleSolenoid::kReverse);
+
 	}
 
 	void AutonomousPeriodic() {
@@ -238,17 +239,25 @@ public:
 						BR.mvtJoystick(Joystick1,gyro);
 					}
 					if (Joystick1->GetRawButton(3))
+					{
 						Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
+						prefs->PutBoolean("LED_PINCEH_OUVERTE",true);
+					}
 
 					if (Joystick1->GetRawButton(4))
+					{
 						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+						prefs->PutBoolean("LED_PINCEH_OUVERTE",false);
+					}
 
 					if (Joystick1->GetRawButton(5)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+						prefs->PutBoolean("LED_PINCEV_MONTE",true);
 					}
 
 					if (Joystick1->GetRawButton(6)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+						prefs->PutBoolean("LED_PINCEV_MONTE",false);
 					}
 
 					if (Joystick1->GetRawButton(7))
