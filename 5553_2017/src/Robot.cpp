@@ -16,6 +16,8 @@
 #include <opencv2/core/types.hpp>
 #include "WPILib.h"
 extern float P_COEFF_A;//0.017
+extern int TOLERANCE;
+
 enum type_etape {AUCUN, FIN, AVANCER, TOURNER, ATTENDRE,PINCE_H,BAC,PINCE_V};
 
 struct etape{
@@ -23,7 +25,11 @@ struct etape{
 	float param2;
 	enum type_etape type;
 };
-#if 0//Millieu
+#define MILLIEU true
+#define GAUCHE true
+#define BLEU true
+#define ROUGE false
+#if MILLIEU==true && (ROUGE==true || BLEU==true)//Millieu
 struct etape Tableau_Actions[] {
 		{190*34,0, AVANCER},
 		{0,0,PINCE_H},
@@ -31,14 +37,44 @@ struct etape Tableau_Actions[] {
 		{0,0,PINCE_V},
 		{0,0,FIN}
 };
-#endif
-#if 1//Gauche boiler
+#elif MILLIEU==false && GAUCHE == true && BLEU ==true && ROUGE ==false//Gauche Bleu
 struct etape Tableau_Actions[] {
-		{150*34,0, AVANCER},
+		{187.56*34,0, AVANCER},
 		{0,60, TOURNER},
-		{200*34,60, AVANCER},
+		{152*34,60, AVANCER},
 		{0,0,PINCE_H},
 		{-50*34,60, AVANCER},
+		{0,0,PINCE_V},
+		{0,0,FIN}
+};
+#elif MILLIEU==false && GAUCHE == false && BLEU ==true && ROUGE ==false//Droite Bleu
+struct etape Tableau_Actions[] {
+		{188*34,0, AVANCER},
+		{0,-60, TOURNER},
+		{159*34,-60, AVANCER},
+		{0,0,PINCE_H},
+		{-50*34,-60, AVANCER},
+		{0,0,PINCE_V},
+		{0,0,FIN}
+};
+
+#elif MILLIEU==false && GAUCHE == false && BLEU ==false && ROUGE ==true//Droite Rouge boiler
+struct etape Tableau_Actions[] {
+		{187.56*34,0, AVANCER},
+		{0,-62, TOURNER},
+		{152*34,-62, AVANCER},
+		{0,0,PINCE_H},
+		{-50*34,-62, AVANCER},
+		{0,0,PINCE_V},
+		{0,0,FIN}
+};
+#elif MILLIEU==false && GAUCHE == true && BLEU ==false && ROUGE ==true//gauche  Rouge
+struct etape Tableau_Actions[] {
+		{188*34,0, AVANCER},
+		{0,62, TOURNER},
+		{145*34,62, AVANCER},
+		{0,0,PINCE_H},
+		{-50*34,62, AVANCER},
 		{0,0,PINCE_V},
 		{0,0,FIN}
 };
@@ -79,6 +115,12 @@ public:
 						// Get a CvSink. This will capture Mats from the Camera
 						cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
 			}
+
+
+
+
+
+
 	void RobotInit() {
 
 		// initialisation des objets et donnï¿½es
@@ -89,6 +131,7 @@ public:
 		Plaque_Zeppelin->SetAngle(60);
 		Pince_Vertical= new DoubleSolenoid(4,5);
 		Pince_Horizontal= new DoubleSolenoid(6,7);
+
 		Bac= new DoubleSolenoid(2,3);
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
@@ -99,32 +142,30 @@ public:
 		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
 		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
 
-
-
 	}
 
 	void etapeSuivante()
 		{
 		BR.counteur_Fin=0;
 			etape_actuelle=etape_suivante;
-			double angle, distance;
+
 			switch(Tableau_Actions[etape_actuelle].type)
 			{
 			case AVANCER:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
-				std::cout<<"Etape Avancer"<<std::endl;
 				etape_suivante++;
 				P_COEFF_A=0.04;
+				TOLERANCE=150;
 				break;
 			case TOURNER:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
 				P_COEFF_A=0.017;
+				TOLERANCE=100;
 				break;
 			case PINCE_H:
 				Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
-				frc::Wait(0.5);
-				std::cout<<"PAss�"<<std::endl;
+				frc::Wait(0.2);
 				etape_suivante++;
 				etapeSuivante();
 				break;
@@ -143,43 +184,18 @@ public:
 		}
 
 	void AutonomousInit() override {
-		bool autoLeft = SmartDashboard::GetBoolean("DB/Button 1",false);
-		bool autoFront = SmartDashboard::GetBoolean("DB/Button 2",true);
-		bool autoRight = SmartDashboard::GetBoolean("DB/Button 3",false);
 
-
-		if(autoLeft){
-			//by Guilhem
-			BR.SetVitesseMax(0.1); // m/s
-			std::cout<<" D�but autonome"<<std::endl;
-			BR.reset();
-			BR.setRobotMode(MODE_TANK);
-			BR.setConsigne(0,0);
-			etape_suivante=0;
-			etape_actuelle=0;
-			etapeSuivante();
-			Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
-			Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-			Bac->Set(frc::DoubleSolenoid::kReverse);
-		}
-		else if(autoFront){
-
-		}
-		else if(autoRight){
-			//by fred (adapted from Guilhem)
-			BR.SetVitesseMax(0.1); // m/s
-			std::cout<<" Début autonome"<<std::endl;
-			BR.reset();
-			BR.setRobotMode(MODE_TANK);
-			BR.setConsigne(0,0);
-			etape_suivante=0;
-			etape_actuelle=0;
-			etapeSuivante();
-			Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
-			Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-			Bac->Set(frc::DoubleSolenoid::kReverse);
-
-		}
+		BR.SetVitesseMax(0.1); // m/s
+		std::cout<<" D�but autonome"<<std::endl;
+		BR.reset();
+		BR.setRobotMode(MODE_TANK);
+		BR.setConsigne(0,0);
+		etape_suivante=0;
+		etape_actuelle=0;
+		etapeSuivante();
+		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+		Bac->Set(frc::DoubleSolenoid::kReverse);
 	}
 
 	void AutonomousPeriodic() {
@@ -187,12 +203,11 @@ public:
 
 		if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 				{
-			std::cout<<" Avancement"<<std::endl;
 
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}
-		Plaque_Zeppelin->SetAngle(48);
+		//Plaque_Zeppelin->SetAngle(48);
 
 	}
 
@@ -205,15 +220,7 @@ public:
 	}
 
 	void TeleopPeriodic() {
-		//
-		//char* value = SmartDashboard::GetString("DB/String 0",0);
-		//std::cout<<"ma valeur: "<<value<<std::endl;
-		//sSmartDashboard::PutString("DB/String 5",std::to_string(value));
 
-
-		double slider = SmartDashboard::GetNumber("DB/Slider 0",0)/5*180;
-		std::cout<<"mon slider: "<<slider<<std::endl;
-		SmartDashboard::PutString("DB/String 6",std::to_string(slider));
 
 
 		if(Joystick1->GetRawButton(BTN_TANK))
@@ -238,12 +245,10 @@ public:
 
 					if (Joystick1->GetRawButton(5)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-						SmartDashboard::PutBoolean("DB/LED 0",true);
 					}
 
 					if (Joystick1->GetRawButton(6)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
-						SmartDashboard::PutBoolean("DB/LED 0",false);
 					}
 
 					if (Joystick1->GetRawButton(7))
@@ -262,12 +267,12 @@ public:
 					if(Mode_Servo==0)
 					{
 						// servo min/max : 48/150
-						Plaque_Zeppelin->SetAngle(slider);
+						Plaque_Zeppelin->SetAngle(48);
 
 					}
 					else
 					{
-						Plaque_Zeppelin->SetAngle(slider);
+						Plaque_Zeppelin->SetAngle(150);
 					}
 
 	}

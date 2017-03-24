@@ -11,6 +11,7 @@
 #include <DoubleSolenoid.h>
 #include <constantes.h>
 float P_COEFF_A=0.04;//0.017
+int TOLERANCE=150;
 
 
 BaseRoulante::BaseRoulante():
@@ -73,15 +74,12 @@ void BaseRoulante::setConsigne(double Longueur, double Angle)
 double BaseRoulante::PID_ANGLE(double Angle, double Angle_gyro)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
 	double erreur=Angle-Angle_gyro;
-std::cout<<"Angle : "<<Angle_gyro<<std::endl;
 	return P_COEFF_A*erreur;
 
 }
 double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
 	double erreur=consigne_L-valeur_Encodeur;
-
-
 	return P_COEFF_L*erreur;
 
 }
@@ -91,14 +89,10 @@ int BaseRoulante::effectuerConsigne(double Angle_gyro)
 	counteur_Fin++;
 	double moyenneGauche = mecaBackLeft.GetDistance();
 	double moyenneDroite = mecaFrontRight.GetDistance() ;
-	std::cout<<"MGauche : "<<moyenneGauche<<std::endl;
 	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
-	std::cout<<"MDroite : "<<moyenneDroite<<std::endl;
 	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneGauche)+PID_ANGLE(Consigne_Ang,Angle_gyro));
 	if(counteur_Fin>TOLERANCE)
 		return 1;
-	std::cout<<"PowerL : "<<powerLeft<<std::endl;
-	std::cout<<"powerRight : "<<powerRight<<std::endl;
 	mecaFrontLeft.Set(powerLeft);
 	mecaBackLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
@@ -126,34 +120,8 @@ void BaseRoulante::setRobotMode(int mode){
 int BaseRoulante::getRobotMode(){
 	return(robotMode);
 }
-void BaseRoulante::getEnc(){
-	std::cout<<"mecaFrontLeft : "<<mecaFrontLeft.GetDistance() <<std::endl;
-	std::cout<<"  mecaBackLeft : "<<mecaBackLeft.GetDistance()<<std::endl;
-	std::cout<<"mecaBackRight : "<<mecaBackRight.GetDistance() <<std::endl;
-	std::cout<<"  mecaFrontRight : "<<mecaFrontRight.GetDistance()<<std::endl;
-}
-void BaseRoulante::Avancenul(){
-	mecaFrontRight.Set(0.4);
-			mecaBackRight.Set(0.4);
-			mecaFrontLeft.Set(-0.4);
-			mecaBackLeft.Set(-0.4);
-			frc::Wait(5);
-			mecaFrontRight.Set(0);
-						mecaBackRight.Set(0);
-						mecaFrontLeft.Set(-0);
-						mecaBackLeft.Set(-0);
-}
-void BaseRoulante::ReculeNul(){
-	mecaFrontRight.Set(-0.4);
-			mecaBackRight.Set(-0.4);
-			mecaFrontLeft.Set(0.4);
-			mecaBackLeft.Set(0.4);
-			frc::Wait(2);
-			mecaFrontRight.Set(0);
-						mecaBackRight.Set(0);
-						mecaFrontLeft.Set(-0);
-						mecaBackLeft.Set(-0);
-}
+
+
 void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 {
 	if(robotMode == MODE_TANK){
@@ -198,13 +166,6 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		mecaFrontLeft.Set(-y -x +z);
 		mecaBackLeft.Set(-y+x+z);
 
-
-
-
-
-		std::cout<<"x: "<<x<<std::endl;
-		std::cout<<"y: "<<y<<std::endl;
-		std::cout<<"z: "<<z<<std::endl;
 
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
 	}

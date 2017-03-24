@@ -66,8 +66,8 @@ public:
 		double sommeErreursD=0;
 	double P=0.00015, I=0.0, D=0.0;
 	double Erreur_Precedente_G=0, Erreur_Precedente_D=0; // erreurs précédentes
-	float powerLeft;
-	float powerRight;
+	float powerLeft=0;
+	float powerRight=0;
 
 
 private:

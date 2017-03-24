@@ -17,7 +17,6 @@
 #define BAC_BAS 0
 
 #define P_COEFF_L 0.00015
-#define TOLERANCE 150
 /* TABLEAU DE CABLAGE du ROBORIO
  *
  * 	RS-232	->
