@@ -170,7 +170,22 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
 	}
 }
+void BaseRoulante::meca_droite(double val)
+{
 
+				mecaFrontRight.Set(-val);
+				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(val);
+				mecaBackLeft.Set(-val);
+}
+void BaseRoulante::meca_gauche(double val)
+{
+
+				mecaFrontRight.Set(val);
+				mecaBackRight.Set(-val);
+				mecaFrontLeft.Set(-val);
+				mecaBackLeft.Set(val);
+}
 void BaseRoulante::resetModeAuto(){
 	mode_auto=MODE_APPROACH;
 }

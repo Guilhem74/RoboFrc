@@ -36,7 +36,8 @@ public:
 	void getEnc();
 	void Avancenul();
 	void ReculeNul();
-
+	void meca_droite(double val);
+	void meca_gauche(double val);
 	void setConsigne(double Longueur, double Angle);
 	int effectuerConsigne(double Angle_gyro);
 	void SetVitesseMax(double max);
