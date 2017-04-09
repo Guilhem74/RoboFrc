@@ -186,6 +186,13 @@ void BaseRoulante::meca_gauche(double val)
 				mecaFrontLeft.Set(-val);
 				mecaBackLeft.Set(val);
 }
+void BaseRoulante::meca_avancer(double val)
+{
+				mecaFrontRight.Set(val);
+				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(val);
+				mecaBackLeft.Set(val);
+}
 void BaseRoulante::resetModeAuto(){
 	mode_auto=MODE_APPROACH;
 }

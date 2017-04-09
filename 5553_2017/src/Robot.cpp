@@ -19,7 +19,8 @@ using namespace cv;
 using namespace std;
 RNG rng(12345);
 int x=0;
-float Centre_bandes=0;
+float Centre_bandes=-1;
+float Perimetre_bandes=-1;
 
 #include "WPILib.h"
 extern float P_COEFF_A;//0.017
@@ -124,8 +125,8 @@ public:
 			cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
 			// Setup a CvSource. This will send images back to the Dashboard
 
-			/*cs::CvSource outputStream = CameraServer::GetInstance()->
-							PutVideo("Test", 640, 480);*/
+			cs::CvSource outputStream = CameraServer::GetInstance()->
+							PutVideo("Test", 640, 480);
 
 			// Mats are very memory expensive. Lets reuse this Mat.
 			cv::Mat mat;
@@ -145,7 +146,7 @@ public:
 				//cv::Scalar(255, 255, 255), 5);
 				cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
 				cv::inRange(mat2,cv::Scalar(160.0,240.0,240.0),cv::Scalar(255.0,255.0,255.0),mat);
-				//outputStream.PutFrame(mat);
+				outputStream.PutFrame(mat);
 				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),3.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
 				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),3.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
 				vector<vector<Point> > contours;
@@ -155,8 +156,8 @@ public:
 				Mat drawing = Mat::zeros( mat.size(), CV_8UC3 );
 				vector<Point2f> mc( contours.size() );
 				vector<Moments> mu(contours.size() );
-				float centre1=0,centre2=0;
-				if(contours.size()<4 && contours.size()>1){
+				float centre1=-1,centre2=-1;
+				/*if(contours.size()<4 && contours.size()>1){
 					for(int i = 0; i< contours.size(); i++)
 					{
 						Centre_bandes=0;
@@ -175,6 +176,55 @@ public:
 				}else{
 					Centre_bandes=-1;
 					cout<<"taille contour"<<contours.size()<<endl;
+				}*/
+				for(int i = 0; i< contours.size(); i++)
+				{
+										Centre_bandes=-1;
+										Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+										drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
+										mu[i] = moments( contours[i], false );
+										mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+										//cout<<"perimetre:"<<arcLength(contours[i],true)<<endl;
+										if(i==0 && arcLength(contours[0],true)>50){
+											centre1=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+										}
+
+										if(i==1 && arcLength(contours[0],true)>50 && centre1!=-1){
+											centre2=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+										}
+										else if(i==1 && arcLength(contours[0],true)>50 && centre1==-1){
+											centre1=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+										}
+
+										if(i==2 && arcLength(contours[0],true)>50 && centre1!=-1){
+											centre2=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+										}
+										else if(i==2 && arcLength(contours[0],true)>50 && centre1==-1){
+											centre1=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+										}
+
+										if(i==3 && arcLength(contours[0],true)>50 && centre1!=-1){
+											centre2=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+										}
+										else if(i==3 && arcLength(contours[0],true)>50 && centre1==-1){
+											centre1=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+										}
+
+										if(centre1!=-1 && centre2!=-1){
+											Centre_bandes=(centre1+centre2)/2;
+										}
+										else{
+											Centre_bandes=-1;
+											Perimetre_bandes=-1;
+										}
+
 				}
 				//cout<<CB/contours.size()<<endl;
 
@@ -304,7 +354,7 @@ public:
 				else if(Centre_bandes==-1){
 					cout<<"Erreur"<<endl;
 					BR.meca_droite(0);
-					BR.meca_gauche(0);
+					//BR.meca_gauche(0);
 				}
 				else{
 					BR.meca_droite(0);
@@ -312,6 +362,8 @@ public:
 					cout<<"rien"<<endl;
 
 				}
+
+				if(Perimetre_bandes<250 && Perimetre_bandes!=-1) BR.meca_avancer(0.4);
 		//Plaque_Zeppelin->SetAngle(48);
 
 	}
