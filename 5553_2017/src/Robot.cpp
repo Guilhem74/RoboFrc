@@ -179,7 +179,6 @@ public:
 				}*/
 				for(int i = 0; i< contours.size(); i++)
 				{
-										Centre_bandes=-1;
 										Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
 										drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
 										mu[i] = moments( contours[i], false );
@@ -342,7 +341,7 @@ public:
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}*/
-		BR.setRobotMode(MODE_MECA);
+				BR.setRobotMode(MODE_MECA);
 				if(Centre_bandes<270 && Centre_bandes!=-1){
 					BR.meca_gauche(0.4);
 					cout<<"gauche"<<endl;
