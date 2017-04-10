@@ -25,13 +25,15 @@ struct etape{
 	float param2;
 	enum type_etape type;
 };
-#define MILLIEU true
-#define GAUCHE true
+
+#define MILLIEU false
+#define GAUCHE false
 #define BLEU true
 #define ROUGE false
+/*
 #if MILLIEU==true && (ROUGE==true || BLEU==true)//Millieu
 struct etape Tableau_Actions[] {
-		{190*34,0, AVANCER},
+		{215*17,0, AVANCER},
 		{0,0,PINCE_H},
 		{-50*34,0, AVANCER},
 		{0,0,PINCE_V},
@@ -39,9 +41,9 @@ struct etape Tableau_Actions[] {
 };
 #elif MILLIEU==false && GAUCHE == true && BLEU ==true && ROUGE ==false//Gauche Bleu
 struct etape Tableau_Actions[] {
-		{187.56*34,0, AVANCER},
+		{150*34,0, AVANCER},
 		{0,60, TOURNER},
-		{152*34,60, AVANCER},
+		{200*34,60, AVANCER},
 		{0,0,PINCE_H},
 		{-50*34,60, AVANCER},
 		{0,0,PINCE_V},
@@ -49,9 +51,9 @@ struct etape Tableau_Actions[] {
 };
 #elif MILLIEU==false && GAUCHE == false && BLEU ==true && ROUGE ==false//Droite Bleu
 struct etape Tableau_Actions[] {
-		{188*34,0, AVANCER},
+		{100*34,0, AVANCER},
 		{0,-60, TOURNER},
-		{159*34,-60, AVANCER},
+		{200*34,-60, AVANCER},
 		{0,0,PINCE_H},
 		{-50*34,-60, AVANCER},
 		{0,0,PINCE_V},
@@ -78,9 +80,44 @@ struct etape Tableau_Actions[] {
 		{0,0,PINCE_V},
 		{0,0,FIN}
 };
-#endif
-
-
+#endif*/
+/*struct etape Tableau_Actions[] {
+		{150*34,0, AVANCER},
+		{0,-60, TOURNER},
+		{170*34,-60, AVANCER},
+		{0,0,PINCE_H},
+		{-50*34,-60, AVANCER},
+		{0,0,PINCE_V},
+		{0,0,FIN}
+};*/
+/*
+struct etape Tableau_Actions[] {
+		{80*34,0, AVANCER},
+		{0,-60, TOURNER},
+		{110*34,-60, AVANCER},
+		{0,0,PINCE_H},
+		{-50*34,-60, AVANCER},
+		{0,0,PINCE_V},
+		{0,0,FIN}
+};*/
+/* MILLIEU*/
+/*
+  struct etape Tableau_Actions[] {
+		//{100*17,0, AVANCER},
+		{195*17.5,0, AVANCER},
+		{0,0,PINCE_H},
+		{-100*17.5,0, AVANCER},
+		{0,0,PINCE_V},
+		{0,0,FIN}
+};*/
+//Coté
+struct etape Tableau_Actions[] {
+		{180*39,0, AVANCER},
+				/*{0,0,PINCE_H},
+				{-100*17.5,0, AVANCER},
+				{0,0,PINCE_V},*/
+				{0,0,FIN}
+};
 class Robot: public frc::IterativeRobot {
 public:
 
@@ -109,9 +146,9 @@ public:
 						// Set the resolution
 						camera.SetResolution(640, 480);
 						camera.SetFPS(20);
-						cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
+						/*cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
 									camera2.SetResolution(160, 120);
-									camera2.SetFPS(5);
+									camera2.SetFPS(5);*/
 						// Get a CvSink. This will capture Mats from the Camera
 						cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
 			}
@@ -139,8 +176,9 @@ public:
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
 		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+		Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
 		prefs = Preferences::GetInstance();
+		BR.setRobotMode(MODE_TANK);
 
 	}
 
@@ -155,17 +193,17 @@ public:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
 				P_COEFF_A=0.04;
-				TOLERANCE=150;
+				TOLERANCE=200;
 				break;
 			case TOURNER:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
 				P_COEFF_A=0.017;
-				TOLERANCE=100;
+				TOLERANCE=150;
 				break;
 			case PINCE_H:
-				Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
-				frc::Wait(0.2);
+				Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+				frc::Wait(0.5);
 				etape_suivante++;
 				etapeSuivante();
 				break;
@@ -193,7 +231,7 @@ public:
 		etape_suivante=0;
 		etape_actuelle=0;
 		etapeSuivante();
-		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+		Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
 		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
 		Bac->Set(frc::DoubleSolenoid::kReverse);
 
@@ -216,6 +254,8 @@ public:
 		std::cout<<" DÃ©but tÃ©lÃ©opÃ©rÃ©"<<std::endl;
 				BR.reset();
 				BR.SetVitesseMax(30.0); // m/s
+				prefs->PutBoolean("LED_PINCEH_OUVERTE",false);
+				prefs->PutBoolean("LED_PINCEV_MONTE",true);
 
 
 	}
@@ -240,13 +280,15 @@ public:
 					}
 					if (Joystick1->GetRawButton(3))
 					{
-						Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
+						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+
 						prefs->PutBoolean("LED_PINCEH_OUVERTE",true);
 					}
 
 					if (Joystick1->GetRawButton(4))
 					{
-						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+						Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
+
 						prefs->PutBoolean("LED_PINCEH_OUVERTE",false);
 					}
 
@@ -267,7 +309,7 @@ public:
 							Bac->Set(frc::DoubleSolenoid::kReverse);
 
 					if((throttle=(Joystick1->GetThrottle()-1))<=0)
-						Treuil->Set(throttle);
+						//Treuil->Set(throttle);
 					if (Joystick1->GetRawButton(11))
 						Mode_Servo=0;
 					if (Joystick1->GetRawButton(12))
@@ -284,6 +326,14 @@ public:
 						Plaque_Zeppelin->SetAngle(150);
 					}
 
+			BR.setRobotMode(MODE_TANK);
+			Wait(1);
+			BR.setRobotMode(MODE_MECA);
+			Wait(1);
+			BR.setRobotMode(MODE_TANK);
+			Wait(1);
+			BR.setRobotMode(MODE_MECA);
+			Wait(1);
 	}
 
 

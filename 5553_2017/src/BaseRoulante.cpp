@@ -10,12 +10,14 @@
 #include <BaseRoulante.h>
 #include <DoubleSolenoid.h>
 #include <constantes.h>
-float P_COEFF_A=0.04;//0.017
-int TOLERANCE=150;
+float P_COEFF_A=0.009;//0.017
+float I_COEFF=0.0000000050;
+float D_COEFF=0.00007;
+int TOLERANCE=10000;
 
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(0,1)
+mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(4,5)
 {
 		// arr�t des moteurs
 		mecaFrontLeft.Set(0.0);
@@ -80,7 +82,10 @@ double BaseRoulante::PID_ANGLE(double Angle, double Angle_gyro)
 double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
 	double erreur=consigne_L-valeur_Encodeur;
-	return P_COEFF_L*erreur;
+	sommeErreur +=erreur;
+	diff_erreur=erreur-erreur_prec;
+	erreur_prec=erreur;
+	return (P_COEFF_L*erreur+I_COEFF*sommeErreur+D_COEFF*diff_erreur);
 
 }
 
@@ -89,6 +94,7 @@ int BaseRoulante::effectuerConsigne(double Angle_gyro)
 	counteur_Fin++;
 	double moyenneGauche = mecaBackLeft.GetDistance();
 	double moyenneDroite = mecaFrontRight.GetDistance() ;
+
 	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
 	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneGauche)+PID_ANGLE(Consigne_Ang,Angle_gyro));
 	if(counteur_Fin>TOLERANCE)
@@ -150,7 +156,7 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 
 	if(robotMode == MODE_MECA){
 
-		float x= -((float)joystick->GetX());
+		float x= ((float)joystick->GetX());
 		float y= -((float)joystick->GetY());
 		float z= -((float)joystick->GetZ());
 
@@ -161,10 +167,13 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		if(z>=-0.3 && z<=0.3)
 			z=0;
 
-		mecaFrontRight.Set(+y+ -x+z);
-		mecaBackRight.Set(y+x+z);
-		mecaFrontLeft.Set(-y -x +z);
-		mecaBackLeft.Set(-y+x+z);
+		x=x*coeff;
+		y*=coeff;
+
+		mecaFrontRight.Set(+y+ -x+z*zCoeff);
+		mecaBackRight.Set(y+x+z*zCoeff);
+		mecaFrontLeft.Set(-y -x +z*zCoeff );
+		mecaBackLeft.Set(-y+x+z*zCoeff );
 
 
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);

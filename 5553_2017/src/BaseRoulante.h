@@ -76,12 +76,16 @@ private:
 	typedef std::chrono::milliseconds ms;
 	int robotMode;
 	float zCoeff = 0.5;
+	float coeff=0.2;
+	float sommeErreur=0;
 	int mode_auto;
 	std::chrono::_V2::system_clock::time_point t0 = Time::now();
 	float previousPower = 0.0f;
 	float xprecedent=0.0f;
 	float coeffAcceleration=0.003f;
 	int powerActuel;
+	double diff_erreur=0;
+	double erreur_prec=0;
 };
 
 
