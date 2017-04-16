@@ -6,7 +6,7 @@
 #include <ADXRS450_Gyro.h>
 #include <BaseRoulante.h>
 #include <constantes.h>
-#include <CameraServer.h>
+//#include <CameraServer.h>
 
 
 #include <thread>
@@ -152,17 +152,7 @@ public:
 			// Get the USB camera from CameraServer
 
 			cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
-<<<<<<< HEAD
-						// Set the resolution
-						camera.SetResolution(640, 480);
-						camera.SetFPS(20);
-						/*cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
-									camera2.SetResolution(160, 120);
-									camera2.SetFPS(5);*/
-						// Get a CvSink. This will capture Mats from the Camera
-						cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-			}
-=======
+
 			// Set the resolution
 			camera.SetResolution(640, 480);
 			camera.SetFPS(20);
@@ -274,31 +264,11 @@ public:
 										}
 
 				}
-				//cout<<CB/contours.size()<<endl;
 
-				/*cv::Mat src=mat2;
-				Mat dst, cdst;
-				Canny(src, dst, 50, 200, 3);
-				cvtColor(dst, cdst, CV_GRAY2BGR);
-
-				vector<Vec4i> lines;
-				HoughLinesP(dst, lines, 1, CV_PI/2, 50, 50, 10 );
-				for( size_t i = 0; i < lines.size(); i++ )
-				{
-						 Vec4i l = lines[i];
-						 if(cv::norm(cv::Point(lines[1][0], lines[1][1]) - cv::Point(lines[1][2], lines[1][3]))<400)
-						 line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
-						 x=lines[1][1];
-						 //cout<<"grandeur lignes: "<<lines[1][0]<<endl;
-				}*/
-
-
->>>>>>> origin/master
-
-				//outputStream.PutFrame(drawing);
 			}
 
 	}
+
 
 
 
