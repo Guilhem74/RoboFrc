@@ -22,7 +22,7 @@ int x=0;
 float Centre_bandes=-1;
 float Perimetre_bandes=-1;
 float largeur_bande=-1;
-
+float angle=0;
 #include "WPILib.h"
 extern float P_COEFF_A;//0.017
 extern int TOLERANCE;
@@ -336,12 +336,12 @@ public:
 		etape_actuelle=0;
 		etapeSuivante();
 		Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+		angle=gyro->GetAngle();
 
 
 	}
 
 	void AutonomousPeriodic() {
-
 
 		/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 				{
@@ -349,6 +349,7 @@ public:
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}*/
+				float angle=gyro->GetAngle();
 				BR.setRobotMode(MODE_MECA);
 				if(Centre_bandes<270 && Centre_bandes!=-1){
 					BR.meca_gauche(0.5);
@@ -367,12 +368,27 @@ public:
 					BR.meca_avancer(0.5);
 					cout<<"avancer"<<endl;
 				}
+				else if(gyro->GetAngle()>angle+5){
+					BR.meca_tourne_droite(0.6);
+					cout<<"décalage gauche"<<endl;
+				}
+				else if(gyro->GetAngle()<angle-5){
+					BR.meca_tourne_gauche(0.6);
+					cout<<"décalage droite"<<endl;
+				}
 				else{
 					BR.meca_droite(0);
 					BR.meca_gauche(0);
 					cout<<"Elles sont au milieu et bonne distance"<<endl;
 				}
 
+				if(gyro->GetAngle()>angle+5){
+					BR.meca_tourne_droite(0.6);
+				}
+				if(gyro->GetAngle()<angle-5){
+					BR.meca_tourne_gauche(0.6);
+
+				}
 				/*if(Perimetre_bandes<500 && Perimetre_bandes!=-1 && Centre_bandes<370 && Centre_bandes>270){
 					BR.meca_avancer(0.7);
 					cout<<"avancer"<<endl;
