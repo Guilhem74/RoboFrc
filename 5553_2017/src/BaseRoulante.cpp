@@ -166,35 +166,47 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		mecaBackRight.Set(y+x+z);
 		mecaFrontLeft.Set(-y -x +z);
 		mecaBackLeft.Set(-y+x+z);
-		(mecaFrontRight.getVictorSP())->Set(-x);
-		(mecaBackRight.getVictorSP())->Set(x);
-		(mecaFrontLeft.getVictorSP())->Set(-x);
-				(mecaBackLeft.getVictorSP())->Set(x);
+
+
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
 	}
 }
 void BaseRoulante::meca_droite(double val)
 {
 
-					mecaFrontRight.Set(val);
-					mecaBackRight.Set(-val);
-					mecaFrontLeft.Set(val);
-					mecaBackLeft.Set(-val);
+				mecaFrontRight.Set(-val);
+				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(val);
+				mecaBackLeft.Set(-val);
 }
 void BaseRoulante::meca_gauche(double val)
 {
-								mecaFrontRight.Set(-val);
-								mecaBackRight.Set(val);
-								mecaFrontLeft.Set(-val);
-								mecaBackLeft.Set(val);
 
+				mecaFrontRight.Set(val);
+				mecaBackRight.Set(-val);
+				mecaFrontLeft.Set(-val);
+				mecaBackLeft.Set(val);
 }
 void BaseRoulante::meca_avancer(double val)
 {
 				mecaFrontRight.Set(val);
 				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(val);
+				mecaBackLeft.Set(val);
+}
+void BaseRoulante::meca_tourne_droite(double val)
+{
+				mecaFrontRight.Set(-val);
+				mecaBackRight.Set(-val);
 				mecaFrontLeft.Set(-val);
 				mecaBackLeft.Set(-val);
+}
+void BaseRoulante::meca_tourne_gauche(double val)
+{
+				mecaFrontRight.Set(val);
+				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(val);
+				mecaBackLeft.Set(val);
 }
 void BaseRoulante::resetModeAuto(){
 	mode_auto=MODE_APPROACH;
