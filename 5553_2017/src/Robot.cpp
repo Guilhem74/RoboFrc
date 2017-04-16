@@ -134,10 +134,10 @@ public:
 	void asservissement() {
 		double droite,gauche,angle,distance;
 
-		droite = BR.mecaFrontRight.GetDistance();
-		gauche = BR.mecaFrontLeft.GetDistance();
-		BR.mecaFrontRight.Reset();
-		BR.mecaFrontLeft.Reset();
+		droite = BR.mecaBackRight.GetDistance();
+		gauche = BR.mecaBackLeft.GetDistance();
+		BR.mecaBackRight.Reset();
+		BR.mecaBackLeft.Reset();
 		angle = gyro->GetAngle();
 		gyro->Reset();
 		distance = (droite+gauche)/2;
