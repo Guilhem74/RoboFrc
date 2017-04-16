@@ -99,9 +99,9 @@ public:
 	BaseRoulante BR;
 	Servo* Plaque_Zeppelin; // servo min/max : 48/150
 	DoubleSolenoid* Pince_Vertical;
-	DoubleSolenoid* Pince_Horizontal;
-	DoubleSolenoid* Bac;
+
 	VictorSP* Treuil;
+	VictorSP* Pince_Roue;
 	Ultrasonic *Ultrason_Avant; // creates the ultra object
 	Preferences *prefs;
 	//P
@@ -147,7 +147,7 @@ public:
 				cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
 				cv::inRange(mat2,cv::Scalar(160.0,240.0,240.0),cv::Scalar(255.0,255.0,255.0),mat);
 				outputStream.PutFrame(mat);
-				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),3.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
+				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),5.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
 				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),3.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
 				vector<vector<Point> > contours;
 				vector<Vec4i> hierarchy;
@@ -157,6 +157,7 @@ public:
 				vector<Point2f> mc( contours.size() );
 				vector<Moments> mu(contours.size() );
 				float centre1=-1,centre2=-1;
+				float perimetre_min=35;
 				/*if(contours.size()<4 && contours.size()>1){
 					for(int i = 0; i< contours.size(); i++)
 					{
@@ -184,34 +185,34 @@ public:
 										mu[i] = moments( contours[i], false );
 										mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
 										//cout<<"perimetre:"<<arcLength(contours[i],true)<<endl;
-										if(i==0 && arcLength(contours[0],true)>50){
+										if(i==0 && arcLength(contours[0],true)>perimetre_min){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 										}
 
-										if(i==1 && arcLength(contours[0],true)>50 && centre1!=-1){
+										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 										}
-										else if(i==1 && arcLength(contours[0],true)>50 && centre1==-1){
+										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 										}
 
-										if(i==2 && arcLength(contours[0],true)>50 && centre1!=-1){
+										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 										}
-										else if(i==2 && arcLength(contours[0],true)>50 && centre1==-1){
+										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 										}
 
-										if(i==3 && arcLength(contours[0],true)>50 && centre1!=-1){
+										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 										}
-										else if(i==3 && arcLength(contours[0],true)>50 && centre1==-1){
+										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 										}
@@ -223,6 +224,7 @@ public:
 											Centre_bandes=-1;
 											Perimetre_bandes=-1;
 										}
+										cout<<"Perimetre_bandes: "<<Perimetre_bandes<<endl;
 
 				}
 				//cout<<CB/contours.size()<<endl;
@@ -259,19 +261,16 @@ public:
 		gyro = new ADXRS450_Gyro(); 								// ï¿½ connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
 
-		Plaque_Zeppelin =new Servo(5);
-		Plaque_Zeppelin->SetAngle(60);
-		Pince_Vertical= new DoubleSolenoid(4,5);
-		Pince_Horizontal= new DoubleSolenoid(6,7);
-		Bac= new DoubleSolenoid(2,3);
+		Pince_Vertical= new DoubleSolenoid(0,1);
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
+		Pince_Roue=new VictorSP(5);
+		Pince_Roue->Set(0);
 		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
-		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
+		Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
 		prefs = Preferences::GetInstance();
 
 	}
@@ -296,7 +295,7 @@ public:
 				TOLERANCE=100;
 				break;
 			case PINCE_H:
-				Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
+
 				frc::Wait(0.2);
 				etape_suivante++;
 				etapeSuivante();
@@ -325,9 +324,7 @@ public:
 		etape_suivante=0;
 		etape_actuelle=0;
 		etapeSuivante();
-		Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
-		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-		Bac->Set(frc::DoubleSolenoid::kReverse);
+		Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
 
 
 	}
@@ -343,26 +340,32 @@ public:
 				}*/
 				BR.setRobotMode(MODE_MECA);
 				if(Centre_bandes<270 && Centre_bandes!=-1){
-					BR.meca_gauche(0.4);
+					BR.meca_gauche(0.7);
 					cout<<"gauche"<<endl;
 				}
 				else if(Centre_bandes>370) {
-					BR.meca_droite(0.4);
+					BR.meca_droite(0.7);
 					cout<<"droite"<<endl;
 				}
 				else if(Centre_bandes==-1){
-					cout<<"Erreur"<<endl;
+					cout<<"Erreur d�tection"<<endl;
 					BR.meca_droite(0);
-					//BR.meca_gauche(0);
+					BR.meca_gauche(0);
+				}
+				else if(Perimetre_bandes<80){
+					BR.meca_avancer(0.7);
+					cout<<"avancer"<<endl;
 				}
 				else{
 					BR.meca_droite(0);
 					BR.meca_gauche(0);
-					cout<<"rien"<<endl;
-
+					cout<<"Elles sont au milieu et bonne distance"<<endl;
 				}
 
-				if(Perimetre_bandes<250 && Perimetre_bandes!=-1) BR.meca_avancer(0.4);
+				/*if(Perimetre_bandes<500 && Perimetre_bandes!=-1 && Centre_bandes<370 && Centre_bandes>270){
+					BR.meca_avancer(0.7);
+					cout<<"avancer"<<endl;
+				}*/
 		//Plaque_Zeppelin->SetAngle(48);
 
 	}
@@ -393,17 +396,8 @@ public:
 					{
 						BR.mvtJoystick(Joystick1,gyro);
 					}
-					if (Joystick1->GetRawButton(3))
-					{
-						Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
-						prefs->PutBoolean("LED_PINCEH_OUVERTE",true);
-					}
 
-					if (Joystick1->GetRawButton(4))
-					{
-						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
-						prefs->PutBoolean("LED_PINCEH_OUVERTE",false);
-					}
+
 
 					if (Joystick1->GetRawButton(5)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
@@ -415,29 +409,10 @@ public:
 						prefs->PutBoolean("LED_PINCEV_MONTE",false);
 					}
 
-					if (Joystick1->GetRawButton(7))
-							Bac->Set(frc::DoubleSolenoid::kForward);
-
-					if (Joystick1->GetRawButton(8))
-							Bac->Set(frc::DoubleSolenoid::kReverse);
 
 					if((throttle=(Joystick1->GetThrottle()-1))<=0)
 						Treuil->Set(throttle);
-					if (Joystick1->GetRawButton(11))
-						Mode_Servo=0;
-					if (Joystick1->GetRawButton(12))
-						Mode_Servo=1;
 
-					if(Mode_Servo==0)
-					{
-						// servo min/max : 48/150
-						Plaque_Zeppelin->SetAngle(48);
-
-					}
-					else
-					{
-						Plaque_Zeppelin->SetAngle(150);
-					}
 
 	}
 

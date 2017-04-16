@@ -15,7 +15,7 @@ int TOLERANCE=150;
 
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(0,1)
+mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(2,3)
 {
 		// arr�t des moteurs
 		mecaFrontLeft.Set(0.0);
@@ -160,13 +160,16 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 			y=0;
 		if(z>=-0.3 && z<=0.3)
 			z=0;
-
+		y=0;
+		z=0;
 		mecaFrontRight.Set(+y+ -x+z);
 		mecaBackRight.Set(y+x+z);
 		mecaFrontLeft.Set(-y -x +z);
 		mecaBackLeft.Set(-y+x+z);
-
-
+		(mecaFrontRight.getVictorSP())->Set(-x);
+		(mecaBackRight.getVictorSP())->Set(x);
+		(mecaFrontLeft.getVictorSP())->Set(-x);
+				(mecaBackLeft.getVictorSP())->Set(x);
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
 	}
 }
@@ -190,8 +193,8 @@ void BaseRoulante::meca_avancer(double val)
 {
 				mecaFrontRight.Set(val);
 				mecaBackRight.Set(val);
-				mecaFrontLeft.Set(val);
-				mecaBackLeft.Set(val);
+				mecaFrontLeft.Set(-val);
+				mecaBackLeft.Set(-val);
 }
 void BaseRoulante::resetModeAuto(){
 	mode_auto=MODE_APPROACH;

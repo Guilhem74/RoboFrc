@@ -156,3 +156,7 @@ float VictorSP_Rampe::getCoeffAcceleration()
 {
 	return coeffAcceleration;
 }
+VictorSP* VictorSP_Rampe::getVictorSP()
+{
+	return &moteur;
+}

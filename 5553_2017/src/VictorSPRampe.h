@@ -29,6 +29,7 @@ public:
 	double GetDistance();
 	void Reset(){codeur.Reset();} // réinitialise l'encodeur
 	void SetVitesseMax(double max){vitesseMax=max;}
+	VictorSP* getVictorSP();
 
 private:
 	void mettreAJourVitesse();
