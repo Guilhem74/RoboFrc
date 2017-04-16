@@ -176,18 +176,18 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 void BaseRoulante::meca_droite(double val)
 {
 
-				mecaFrontRight.Set(-val);
-				mecaBackRight.Set(val);
-				mecaFrontLeft.Set(val);
-				mecaBackLeft.Set(-val);
+					mecaFrontRight.Set(val);
+					mecaBackRight.Set(-val);
+					mecaFrontLeft.Set(val);
+					mecaBackLeft.Set(-val);
 }
 void BaseRoulante::meca_gauche(double val)
 {
+								mecaFrontRight.Set(-val);
+								mecaBackRight.Set(val);
+								mecaFrontLeft.Set(-val);
+								mecaBackLeft.Set(val);
 
-				mecaFrontRight.Set(val);
-				mecaBackRight.Set(-val);
-				mecaFrontLeft.Set(-val);
-				mecaBackLeft.Set(val);
 }
 void BaseRoulante::meca_avancer(double val)
 {

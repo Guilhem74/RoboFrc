@@ -21,6 +21,7 @@ RNG rng(12345);
 int x=0;
 float Centre_bandes=-1;
 float Perimetre_bandes=-1;
+float largeur_bande=-1;
 
 #include "WPILib.h"
 extern float P_COEFF_A;//0.017
@@ -147,7 +148,7 @@ public:
 				cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
 				cv::inRange(mat2,cv::Scalar(160.0,240.0,240.0),cv::Scalar(255.0,255.0,255.0),mat);
 				outputStream.PutFrame(mat);
-				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),5.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
+				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),4.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
 				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),3.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
 				vector<vector<Point> > contours;
 				vector<Vec4i> hierarchy;
@@ -184,37 +185,47 @@ public:
 										drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
 										mu[i] = moments( contours[i], false );
 										mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+										cv::Rect rect=boundingRect(contours[i]);
+										cout<<"width : "<<rect.width<<endl;
 										//cout<<"perimetre:"<<arcLength(contours[i],true)<<endl;
+
 										if(i==0 && arcLength(contours[0],true)>perimetre_min){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
 										}
 
 										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
 										}
 										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
 										}
 
 										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
 										}
 										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
 										}
 
 										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
 										}
 										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
 										}
 
 										if(centre1!=-1 && centre2!=-1){
@@ -340,11 +351,11 @@ public:
 				}*/
 				BR.setRobotMode(MODE_MECA);
 				if(Centre_bandes<270 && Centre_bandes!=-1){
-					BR.meca_gauche(0.7);
+					BR.meca_gauche(0.5);
 					cout<<"gauche"<<endl;
 				}
 				else if(Centre_bandes>370) {
-					BR.meca_droite(0.7);
+					BR.meca_droite(0.5);
 					cout<<"droite"<<endl;
 				}
 				else if(Centre_bandes==-1){
@@ -352,8 +363,8 @@ public:
 					BR.meca_droite(0);
 					BR.meca_gauche(0);
 				}
-				else if(Perimetre_bandes<80){
-					BR.meca_avancer(0.7);
+				else if(largeur_bande<20){
+					BR.meca_avancer(0.5);
 					cout<<"avancer"<<endl;
 				}
 				else{
