@@ -10,6 +10,7 @@
 #include <BaseRoulante.h>
 #include <DoubleSolenoid.h>
 #include <constantes.h>
+
 float P_COEFF_A=0.04;//0.017
 int TOLERANCE=150;
 
@@ -35,6 +36,7 @@ mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRig
 		align_marge = 20; // en mm
 		rot_marge = 10; // en mm
 		rot_speed = 0.3; // entre -1 et 1
+
 }
 
 void BaseRoulante::SetPID(double P_val,double I_val, double D_val)
@@ -122,7 +124,7 @@ int BaseRoulante::getRobotMode(){
 }
 
 
-void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
+void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro, double angleini)
 {
 	if(robotMode == MODE_TANK){
 		//R2D2->ArcadeDrive(	-joystick->GetZ(),-joystick->GetY(),true);
@@ -158,24 +160,32 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 			x=0;
 		if(y>=-0.2 && y<=0.2)
 			y=0;
-		if(z>=-0.3 && z<=0.3)
-			z=0;
-		y=0;
-		z=0;
-		mecaFrontRight.Set(+y+ -x+z);
-		mecaBackRight.Set(y+x+z);
-		mecaFrontLeft.Set(-y -x +z);
-		mecaBackLeft.Set(-y+x+z);
-		(mecaFrontRight.getVictorSP())->Set(-x);
-		(mecaBackRight.getVictorSP())->Set(x);
-		(mecaFrontLeft.getVictorSP())->Set(-x);
-				(mecaBackLeft.getVictorSP())->Set(x);
+
+		double angle = gyro->GetAngle();
+		anglevoulu +=z;
+		double anglecalc = anglevoulu + angle;
+		anglecalc = (anglecalc/10);
+		std::cout<<"gyro"<<angle<<std::endl;
+		std::cout<<"angle_voulu"<<anglevoulu<<std::endl;
+		std::cout<<"angle_calc"<<anglecalc<<std::endl;
+		std::cout<<"FrontRight"<<y+ -x + anglecalc<<std::endl;
+		std::cout<<"BackRight"<<y+x + anglecalc<<std::endl;
+		std::cout<<"FrontLeft"<<-y -x + anglecalc<<std::endl;
+		std::cout<<"BackLeft"<<-y+x+anglecalc<<std::endl;
+/*		mecaFrontRight.Set(y+ -x + anglecalc);
+		mecaBackRight.Set(y+x + anglecalc);
+		mecaFrontLeft.Set(-y -x + anglecalc);
+		mecaBackLeft.Set(-y+x+anglecalc);*/
+		(mecaFrontRight.getVictorSP())->Set(y+ -x + anglecalc);
+		(mecaBackRight.getVictorSP())->Set(y +x + anglecalc);
+		(mecaFrontLeft.getVictorSP())->Set(-y -x + anglecalc);
+		(mecaBackLeft.getVictorSP())->Set(-y +x +anglecalc);
+
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
 	}
 }
 void BaseRoulante::meca_droite(double val)
 {
-
 				mecaFrontRight.Set(-val);
 				mecaBackRight.Set(val);
 				mecaFrontLeft.Set(val);
@@ -183,7 +193,6 @@ void BaseRoulante::meca_droite(double val)
 }
 void BaseRoulante::meca_gauche(double val)
 {
-
 				mecaFrontRight.Set(val);
 				mecaBackRight.Set(-val);
 				mecaFrontLeft.Set(-val);
@@ -193,6 +202,22 @@ void BaseRoulante::meca_avancer(double val)
 {
 				mecaFrontRight.Set(val);
 				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(-val);
+				mecaBackLeft.Set(-val);
+}
+void BaseRoulante::meca_tourne_gauche(double val)
+{
+				//double angle = gyro->GetAngle();
+				mecaFrontRight.Set(val);
+				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(val);
+				mecaBackLeft.Set(val);
+}
+void BaseRoulante::meca_tourne_droite(double val)
+{
+				//double angle = gyro->GetAngle();
+				mecaFrontRight.Set(-val);
+				mecaBackRight.Set(-val);
 				mecaFrontLeft.Set(-val);
 				mecaBackLeft.Set(-val);
 }

@@ -107,7 +107,9 @@ public:
 	//P
 	int Mode_Servo=0;
 	double throttle=0;
-	int robotMode ;
+	int robotMode;
+	double angleini = 0;
+	double erreuranglemax = 5;
 	int etape_actuelle;
 	int etape_suivante;
 	double ecart_roues_largeur_mm = 1100;  //740
@@ -261,7 +263,7 @@ public:
 		gyro = new ADXRS450_Gyro(); 								// ï¿½ connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
 
-		Pince_Vertical= new DoubleSolenoid(0,1);
+		Pince_Vertical= new DoubleSolenoid(1,0);
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
 		Pince_Roue=new VictorSP(5);
@@ -325,6 +327,7 @@ public:
 		etape_actuelle=0;
 		etapeSuivante();
 		Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+		angleini = gyro->GetAngle();
 
 
 	}
@@ -332,13 +335,14 @@ public:
 	void AutonomousPeriodic() {
 
 
-		/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
+				/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 				{
 
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}*/
 				BR.setRobotMode(MODE_MECA);
+				double angle = gyro->GetAngle();
 				if(Centre_bandes<270 && Centre_bandes!=-1){
 					BR.meca_gauche(0.7);
 					cout<<"gauche"<<endl;
@@ -362,11 +366,15 @@ public:
 					cout<<"Elles sont au milieu et bonne distance"<<endl;
 				}
 
-				/*if(Perimetre_bandes<500 && Perimetre_bandes!=-1 && Centre_bandes<370 && Centre_bandes>270){
-					BR.meca_avancer(0.7);
-					cout<<"avancer"<<endl;
+				/*if(angle-angleini > erreuranglemax){
+						BR.meca_tourne_droite(0.7);
+						cout<<"tourne_droite"<<endl;
+				}
+				else if(angle-angleini < -erreuranglemax){
+						BR.meca_tourne_gauche(0.7);
+						cout<<"tourne_gauche"<<endl;
 				}*/
-		//Plaque_Zeppelin->SetAngle(48);
+
 
 	}
 
@@ -374,6 +382,7 @@ public:
 		std::cout<<" DÃ©but tÃ©lÃ©opÃ©rÃ©"<<std::endl;
 				BR.reset();
 				BR.SetVitesseMax(30.0); // m/s
+		angleini = gyro->GetAngle();
 
 
 	}
@@ -390,23 +399,32 @@ public:
 					if(Joystick1->GetRawButton(BTN_MECA))
 					{
 						BR.setRobotMode(MODE_MECA);
+						BR.anglevoulu = gyro->GetAngle();
 					}
 
 					if (Joystick1->GetX() || Joystick1->GetY() || Joystick1->GetZ() )
 					{
-						BR.mvtJoystick(Joystick1,gyro);
+						BR.mvtJoystick(Joystick1,gyro, angleini);
 					}
 
+					if (Joystick1->GetRawButton(3))
+					{
+						Pince_Roue->Set(0.7);
+						Wait(0.3);
+						Pince_Roue->Set(0.0);
+					}
 
-
-					if (Joystick1->GetRawButton(5)){
+					if (Joystick1->GetRawButton(4)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
 						prefs->PutBoolean("LED_PINCEV_MONTE",true);
 					}
 
-					if (Joystick1->GetRawButton(6)){
+					if (Joystick1->GetRawButton(5)){
 						Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
 						prefs->PutBoolean("LED_PINCEV_MONTE",false);
+						Pince_Roue->Set(-0.7);
+						Wait(0.3);
+						Pince_Roue->Set(0.0);
 					}
 
 

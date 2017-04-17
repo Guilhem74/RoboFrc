@@ -30,7 +30,7 @@ public:
 	void setRobotMode(int);
 	int getRobotMode();
 
-	void mvtJoystick(Joystick*, ADXRS450_Gyro* );
+	void mvtJoystick(Joystick*, ADXRS450_Gyro*, double angleini );
 	void deposeRoueAuto(Joystick* , ADXRS450_Gyro*, Ultrasonic*,Ultrasonic*);
 	void resetModeAuto();
 	void getEnc();
@@ -39,6 +39,8 @@ public:
 	void meca_droite(double val);
 	void meca_gauche(double val);
 	void meca_avancer(double val);
+	void meca_tourne_gauche(double val);
+	void meca_tourne_droite(double val);
 
 	void setConsigne(double Longueur, double Angle);
 	int effectuerConsigne(double Angle_gyro);
@@ -71,8 +73,8 @@ public:
 	double Erreur_Precedente_G=0, Erreur_Precedente_D=0; // erreurs précédentes
 	float powerLeft=0;
 	float powerRight=0;
-
-
+	double angleini = 0;
+	double anglevoulu = 0;
 private:
 	typedef std::chrono::high_resolution_clock Time;
 	typedef std::chrono::duration<float> deltaT;
