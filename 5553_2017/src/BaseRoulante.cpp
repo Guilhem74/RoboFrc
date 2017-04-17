@@ -223,14 +223,7 @@ void BaseRoulante::meca_tourne_gauche(double val)
 				mecaBackLeft.Set(val);
 }
 
-void BaseRoulante::meca_tourne_droite(double val)
-{
-				//double angle = gyro->GetAngle();
-				mecaFrontRight.Set(-val);
-				mecaBackRight.Set(-val);
-				mecaFrontLeft.Set(-val);
-				mecaBackLeft.Set(-val);
-}
+
 
 void BaseRoulante::resetModeAuto(){
 	mode_auto=MODE_APPROACH;

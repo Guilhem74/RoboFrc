@@ -360,9 +360,9 @@ public:
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}*/
-				float angle=gyro->GetAngle();
+
 				BR.setRobotMode(MODE_MECA);
-				double angle = gyro->GetAngle();
+				angle = gyro->GetAngle();
 				if(Centre_bandes<270 && Centre_bandes!=-1){
 					BR.meca_gauche(0.5);
 					cout<<"gauche"<<endl;
