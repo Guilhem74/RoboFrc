@@ -1,4 +1,4 @@
-/*
+﻿/*
  * BaseRoulante.cppS
  *
  *  Created on: 27 d�c. 2016
@@ -161,6 +161,7 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro, double a
 		if(y>=-0.2 && y<=0.2)
 			y=0;
 
+
 		double angle = gyro->GetAngle();
 		anglevoulu +=z;
 		double anglecalc = anglevoulu + angle;
@@ -180,6 +181,7 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro, double a
 		(mecaBackRight.getVictorSP())->Set(y +x + anglecalc);
 		(mecaFrontLeft.getVictorSP())->Set(-y -x + anglecalc);
 		(mecaBackLeft.getVictorSP())->Set(-y +x +anglecalc);
+
 
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
 	}
@@ -202,17 +204,25 @@ void BaseRoulante::meca_avancer(double val)
 {
 				mecaFrontRight.Set(val);
 				mecaBackRight.Set(val);
+				mecaFrontLeft.Set(val);
+				mecaBackLeft.Set(val);
+}
+void BaseRoulante::meca_tourne_droite(double val)
+{
+				mecaFrontRight.Set(-val);
+				mecaBackRight.Set(-val);
 				mecaFrontLeft.Set(-val);
 				mecaBackLeft.Set(-val);
 }
 void BaseRoulante::meca_tourne_gauche(double val)
 {
-				//double angle = gyro->GetAngle();
+
 				mecaFrontRight.Set(val);
 				mecaBackRight.Set(val);
 				mecaFrontLeft.Set(val);
 				mecaBackLeft.Set(val);
 }
+
 void BaseRoulante::meca_tourne_droite(double val)
 {
 				//double angle = gyro->GetAngle();
@@ -221,6 +231,7 @@ void BaseRoulante::meca_tourne_droite(double val)
 				mecaFrontLeft.Set(-val);
 				mecaBackLeft.Set(-val);
 }
+
 void BaseRoulante::resetModeAuto(){
 	mode_auto=MODE_APPROACH;
 }

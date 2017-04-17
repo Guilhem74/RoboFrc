@@ -1,4 +1,4 @@
-/*
+﻿/*
 
  * BaseRoulante.h
 
@@ -39,8 +39,11 @@ public:
 	void meca_droite(double val);
 	void meca_gauche(double val);
 	void meca_avancer(double val);
+
 	void meca_tourne_gauche(double val);
 	void meca_tourne_droite(double val);
+
+
 
 	void setConsigne(double Longueur, double Angle);
 	int effectuerConsigne(double Angle_gyro);
