@@ -22,6 +22,7 @@ int x=0;
 float Centre_bandes=-1;
 float Perimetre_bandes=-1;
 float largeur_bande=-1;
+float longueur_bande=-1;
 float angle=0;
 #include "WPILib.h"
 extern float P_COEFF_A;//0.017
@@ -121,6 +122,7 @@ public:
 			// Set the resolution
 			camera.SetResolution(640, 480);
 			camera.SetFPS(20);
+			camera.SetExposureManual(0);
 			/*cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
 						camera2.SetResolution(160, 120);
 						camera2.SetFPS(5);*/
@@ -148,10 +150,10 @@ public:
 				//rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
 				//cv::Scalar(255, 255, 255), 5);
 				cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
-				cv::inRange(mat2,cv::Scalar(160.0,240.0,240.0),cv::Scalar(255.0,255.0,255.0),mat);
+				cv::inRange(mat2,cv::Scalar(0.0,90.0,39.0),cv::Scalar(177.0,255.0,222.0),mat);
 				outputStream.PutFrame(mat);
-				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),4.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
-				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),3.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
+				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),7.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
+				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),5.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
 				vector<vector<Point> > contours;
 				vector<Vec4i> hierarchy;
 
@@ -188,43 +190,44 @@ public:
 										mu[i] = moments( contours[i], false );
 										mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
 										cv::Rect rect=boundingRect(contours[i]);
-										cout<<"width : "<<rect.width<<endl;
+										//cout<<"width : "<<rect.width<<endl;
 										//cout<<"perimetre:"<<arcLength(contours[i],true)<<endl;
 
-										if(i==0 && arcLength(contours[0],true)>perimetre_min){
+										if(i==0 && arcLength(contours[0],true)>perimetre_min && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+											centre1=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
+											longueur_bande=rect.height;
+										}
+
+										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+											centre2=mu[i].m10/mu[i].m00;
+											Perimetre_bandes=arcLength(contours[i],true);
+											largeur_bande=rect.width;
+										}
+										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 										}
 
-										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
+										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 										}
-										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
+										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 										}
 
-										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
+										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 										}
-										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
-											centre1=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-										}
-
-										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1){
-											centre2=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-										}
-										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1){
+										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
@@ -237,7 +240,9 @@ public:
 											Centre_bandes=-1;
 											Perimetre_bandes=-1;
 										}
-										cout<<"Perimetre_bandes: "<<Perimetre_bandes<<endl;
+										//cout<<"Perimetre_bandes: "<<Perimetre_bandes<<endl;
+										cout<<"Centre_bandes: "<<Centre_bandes<<endl;
+										cout<<"hauteur, largeur, rapport: "<<rect.height<<", "<<rect.width<<", "<<rect.height/rect.width<<endl;
 
 				}
 				//cout<<CB/contours.size()<<endl;
@@ -364,34 +369,34 @@ public:
 				BR.setRobotMode(MODE_MECA);
 				angle = gyro->GetAngle();
 				if(Centre_bandes<270 && Centre_bandes!=-1){
-					BR.meca_gauche(0.5);
-					cout<<"gauche"<<endl;
+					//BR.meca_gauche(0.5);
+					//cout<<"gauche"<<endl;
 				}
 				else if(Centre_bandes>370) {
-					BR.meca_droite(0.5);
-					cout<<"droite"<<endl;
+					//BR.meca_droite(0.5);
+					//cout<<"droite"<<endl;
 				}
 				else if(Centre_bandes==-1){
-					cout<<"Erreur détection"<<endl;
+					//cout<<"Erreur détection"<<endl;
 					BR.meca_droite(0);
 					BR.meca_gauche(0);
 				}
 				else if(largeur_bande<20){
-					BR.meca_avancer(0.5);
-					cout<<"avancer"<<endl;
+					//BR.meca_avancer(0.5);
+					//cout<<"avancer"<<endl;
 				}
 				else if(gyro->GetAngle()>angle+5){
-					BR.meca_tourne_droite(0.6);
-					cout<<"décalage gauche"<<endl;
+					//BR.meca_tourne_droite(0.6);
+					//cout<<"décalage gauche"<<endl;
 				}
 				else if(gyro->GetAngle()<angle-5){
-					BR.meca_tourne_gauche(0.6);
-					cout<<"décalage droite"<<endl;
+					//BR.meca_tourne_gauche(0.6);
+					//cout<<"décalage droite"<<endl;
 				}
 				else{
 					BR.meca_droite(0);
 					BR.meca_gauche(0);
-					cout<<"Elles sont au milieu et bonne distance"<<endl;
+					//cout<<"Elles sont au milieu et bonne distance"<<endl;
 				}
 
 				/*if(angle-angleini > erreuranglemax){
@@ -403,10 +408,10 @@ public:
 						cout<<"tourne_gauche"<<endl;
 
 				if(gyro->GetAngle()>angle+5){
-					BR.meca_tourne_droite(0.6);
+					//BR.meca_tourne_droite(0.6);
 				}
 				if(gyro->GetAngle()<angle-5){
-					BR.meca_tourne_gauche(0.6);
+					//BR.meca_tourne_gauche(0.6);
 
 				}
 				/*if(Perimetre_bandes<500 && Perimetre_bandes!=-1 && Centre_bandes<370 && Centre_bandes>270){
