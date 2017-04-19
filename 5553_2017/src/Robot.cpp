@@ -122,7 +122,7 @@ public:
 			// Set the resolution
 			camera.SetResolution(640, 480);
 			camera.SetFPS(20);
-			camera.SetExposureManual(0);
+			camera.SetExposureManual(3);
 			/*cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
 						camera2.SetResolution(160, 120);
 						camera2.SetFPS(5);*/
@@ -150,10 +150,10 @@ public:
 				//rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
 				//cv::Scalar(255, 255, 255), 5);
 				cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
-				cv::inRange(mat2,cv::Scalar(0.0,90.0,39.0),cv::Scalar(177.0,255.0,222.0),mat);
+				cv::inRange(mat2,cv::Scalar(0.0,50.0,0.0),cv::Scalar(33.0,205.0,128.0),mat);
 				outputStream.PutFrame(mat);
-				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),7.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
-				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),5.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
+				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),4.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
+				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),2.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
 				vector<vector<Point> > contours;
 				vector<Vec4i> hierarchy;
 
@@ -162,7 +162,9 @@ public:
 				vector<Point2f> mc( contours.size() );
 				vector<Moments> mu(contours.size() );
 				float centre1=-1,centre2=-1;
-				float perimetre_min=35;
+				float hauteur=-1, largeur=-1, rapport=-1;
+				float perimetre_min=30;
+				float distance=-1;
 				/*if(contours.size()<4 && contours.size()>1){
 					for(int i = 0; i< contours.size(); i++)
 					{
@@ -190,47 +192,56 @@ public:
 										mu[i] = moments( contours[i], false );
 										mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
 										cv::Rect rect=boundingRect(contours[i]);
-										//cout<<"width : "<<rect.width<<endl;
-										//cout<<"perimetre:"<<arcLength(contours[i],true)<<endl;
+										hauteur=float(rect.height);
+										largeur=float(rect.width);
+										rapport=hauteur/largeur;
+										//cout<<"hauteur : \n"<<rect.height<<endl;
+										//cout<<"width : \n"<<rect.width<<endl;
+										//cout<<"perimetre: \n"<<arcLength(contours[i],true)<<endl;
 
-										if(i==0 && arcLength(contours[0],true)>perimetre_min && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+										if(i==0 && arcLength(contours[0],true)>perimetre_min && rapport<4.0 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 											longueur_bande=rect.height;
 										}
 
-										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<4.0 && rapport>1.5){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 										}
-										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<4.0 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
+											longueur_bande=rect.height;
 										}
 
-										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<4.0 && rapport>1.5){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
+											longueur_bande=rect.height;
 										}
-										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<4.0 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
+											longueur_bande=rect.height;
 										}
 
-										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<4.0 && rapport>1.5){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
+											longueur_bande=rect.height;
 										}
-										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rect.height/rect.width<0.65 && rect.height/rect.width>0.35){
+										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<4.0 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
+											longueur_bande=rect.height;
 										}
 
 										if(centre1!=-1 && centre2!=-1){
@@ -241,10 +252,61 @@ public:
 											Perimetre_bandes=-1;
 										}
 										//cout<<"Perimetre_bandes: "<<Perimetre_bandes<<endl;
-										cout<<"Centre_bandes: "<<Centre_bandes<<endl;
-										cout<<"hauteur, largeur, rapport: "<<rect.height<<", "<<rect.width<<", "<<rect.height/rect.width<<endl;
+
 
 				}
+				cout<<"hauteur: \n"<<longueur_bande<<endl;
+				//cout<<"hauteur, largeur, rapport: \n"<<longueur_bande<<", "<<largeur_bande<<", "<<rapport<<endl;
+				if(longueur_bande<180){
+					distance=(-0.00009)*longueur_bande*longueur_bande*longueur_bande;
+					distance+=0.0421*longueur_bande*longueur_bande;
+					distance-=6.2906*longueur_bande+371.59;
+				}
+				cout<<"distance= \n"<<distance<<endl;
+
+
+				/*145cm -> perimetre = 105
+				hauteur = 39
+				largeur = 20
+
+				76cm -> 204
+				74
+				40
+
+				222cm -> 70
+				25
+				13
+
+				30cm ->
+				173
+				110//++
+
+ perimetre:
+ 66.4853
+ Perimetre_bandes:
+ 66.4853
+ hauteur, largeur, rapport:
+ 25, 13, 1.84615
+ hauteur :-
+ 25
+ width :
+ 13
+ perimetre:
+ 69.6569
+ hauteur :
+ 23
+ width :
+ 13
+ perimetre:
+ 65.0711
+ Perimetre_bandes:
+ 65.0711
+ hauteur, largeur, rapport:
+ 25, 13
+
+				//cout<<"Centre_bandes: \n"<<Centre_bandes<<endl;
+				//cout<<"Centre1, centre2 : \n"<<centre1<<" "<<centre2<<endl;
+				//cout<<"hauteur, largeur, rapport: \n"<<hauteur<<", "<<largeur_bande<<", "<<rapport<<endl;
 				//cout<<CB/contours.size()<<endl;
 
 				/*cv::Mat src=mat2;
@@ -370,33 +432,33 @@ public:
 				angle = gyro->GetAngle();
 				if(Centre_bandes<270 && Centre_bandes!=-1){
 					//BR.meca_gauche(0.5);
-					//cout<<"gauche"<<endl;
+					cout<<"gauche"<<endl;
 				}
 				else if(Centre_bandes>370) {
 					//BR.meca_droite(0.5);
-					//cout<<"droite"<<endl;
+					cout<<"droite"<<endl;
 				}
 				else if(Centre_bandes==-1){
-					//cout<<"Erreur détection"<<endl;
+					cout<<"Erreur détection"<<endl;
 					BR.meca_droite(0);
 					BR.meca_gauche(0);
 				}
 				else if(largeur_bande<20){
 					//BR.meca_avancer(0.5);
-					//cout<<"avancer"<<endl;
+					cout<<"avancer"<<endl;
 				}
 				else if(gyro->GetAngle()>angle+5){
 					//BR.meca_tourne_droite(0.6);
-					//cout<<"décalage gauche"<<endl;
+					cout<<"décalage gauche"<<endl;
 				}
 				else if(gyro->GetAngle()<angle-5){
 					//BR.meca_tourne_gauche(0.6);
-					//cout<<"décalage droite"<<endl;
+					cout<<"décalage droite"<<endl;
 				}
 				else{
 					BR.meca_droite(0);
 					BR.meca_gauche(0);
-					//cout<<"Elles sont au milieu et bonne distance"<<endl;
+					cout<<"Elles sont au milieu et bonne distance"<<endl;
 				}
 
 				/*if(angle-angleini > erreuranglemax){
