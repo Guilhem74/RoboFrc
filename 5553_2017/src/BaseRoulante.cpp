@@ -10,6 +10,7 @@
 #include <BaseRoulante.h>
 #include <DoubleSolenoid.h>
 #include <constantes.h>
+#include <math.h>
 float P_COEFF_A=0.009;//0.017
 float I_COEFF=0.0000000050;
 float D_COEFF=0.00007;
@@ -156,7 +157,7 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 
 	if(robotMode == MODE_MECA){
 
-		float x= ((float)joystick->GetX());
+		/*float x= ((float)joystick->GetX());
 		float y= -((float)joystick->GetY());
 		float z= -((float)joystick->GetZ());
 
@@ -175,10 +176,126 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro)
 		mecaFrontLeft.Set(-y -x +z*zCoeff );
 		mecaBackLeft.Set(-y+x+z*zCoeff );
 
-
+		*/
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
+
+		float x= ((float)joystick->GetX());
+		float y= ((float)joystick->GetY());
+		float z= ((float)joystick->GetZ());
+
+		ConvertJoystick(x,y,z);
+
+
+
+
 	}
 }
+
+
+double BaseRoulante::Ecrete(double val)
+{
+	val = val > 1 ? 1 : val;
+	return val;
+}
+
+
+
+
+void BaseRoulante::ConvertJoystick(double x, double y, double z)
+{
+
+	//Dead Space
+	double xyDeadSpace = 0.1;
+	double zDeadSpace = 0.25;
+
+        //Check that the position is outside the deadspace
+	double newx = (fabs(x) - xyDeadSpace) * (xyDeadSpace+1);
+	if (newx < 0) newx = 0;
+	x = (x < 0) ? -newx : newx;
+	double newy = (fabs(y) - xyDeadSpace) * (xyDeadSpace + 1);
+	if (newy < 0) newy = 0;
+	y = (y < 0) ? -newy : newy;
+	double newz = (fabs(z) - zDeadSpace) * (zDeadSpace + 1);
+	if (newz < 0) newz = 0;
+	z = (z < 0) ? -newz : newz;
+
+	x = Ecrete(x);
+	y = Ecrete(y);
+	z = Ecrete(z);
+
+	double magnitude = sqrt(x * x + y * y);
+	double direction = atan2(x, y);
+	double rotation = z;
+
+	if (magnitude == 0)
+		direction = 0;
+
+	//Into degrees
+	direction = direction * 180.0 / 3.1415;
+
+	/*if (gyroLocked)
+	{
+		direction -= heading;
+		direction += headingLockPoint;
+	}*/
+
+	if (direction < 0)
+		direction += 360;
+	if (direction > 360)
+		direction -= 360;
+
+	NewMecanumDrive(magnitude, direction, rotation);
+}
+
+
+
+
+
+void BaseRoulante::NewMecanumDrive(double magnitude, double direction, double rotation)
+{
+	//Limit limits magnitude to 1.0
+	magnitude = Ecrete(magnitude);
+
+	// Normalized for full power along the Cartesian axes.
+	magnitude = magnitude * sqrt(2.0);
+
+	// The rollers are at 45 degree angles.
+	double dirInRad = (direction + 45.0) * 3.1415 / 180.0;
+	double cosD = cos(dirInRad);
+	double sinD = sin(dirInRad);
+	double wheelSpeeds [4];
+
+	wheelSpeeds[0] = sinD * magnitude + rotation;
+	wheelSpeeds[1] = cosD * magnitude - rotation;
+	wheelSpeeds[2] = cosD * magnitude + rotation;
+	wheelSpeeds[3] = sinD * magnitude - rotation;
+
+
+	wheelSpeeds[0] = Ecrete(wheelSpeeds[0]);
+	wheelSpeeds[1] = Ecrete(wheelSpeeds[1]);
+	wheelSpeeds[2] = Ecrete(wheelSpeeds[2]);
+	wheelSpeeds[3] = Ecrete(wheelSpeeds[3]);
+
+	mecaFrontLeft.Set(wheelSpeeds[0]);
+	mecaFrontRight.Set(-wheelSpeeds[1]);
+	mecaBackLeft.Set(wheelSpeeds[2]);
+	mecaBackRight.Set(-wheelSpeeds[3]);
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void BaseRoulante::meca_droite(double val)
 {
 

@@ -39,7 +39,9 @@ public:
 	void meca_droite(double val);
 	void meca_gauche(double val);
 	void meca_avancer(double val);
-
+	void ConvertJoystick(double x, double y, double z);
+	void NewMecanumDrive(double magnitude, double direction, double rotation);
+	double Ecrete(double val);
 	void setConsigne(double Longueur, double Angle);
 	int effectuerConsigne(double Angle_gyro);
 	void SetVitesseMax(double max);
