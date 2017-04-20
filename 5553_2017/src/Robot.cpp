@@ -7,7 +7,7 @@
 #include <BaseRoulante.h>
 #include <constantes.h>
 #include <CameraServer.h>
-
+#include <math.h>
 
 #include <thread>
 #include <CameraServer.h>
@@ -165,6 +165,8 @@ public:
 				float hauteur=-1, largeur=-1, rapport=-1;
 				float perimetre_min=30;
 				float distance=-1;
+				largeur_bande=-1;
+				longueur_bande=-1;
 				/*if(contours.size()<4 && contours.size()>1){
 					for(int i = 0; i< contours.size(); i++)
 					{
@@ -199,45 +201,45 @@ public:
 										//cout<<"width : \n"<<rect.width<<endl;
 										//cout<<"perimetre: \n"<<arcLength(contours[i],true)<<endl;
 
-										if(i==0 && arcLength(contours[0],true)>perimetre_min && rapport<4.0 && rapport>1.5){
+										if(i==0 && arcLength(contours[0],true)>perimetre_min && rapport<3.5 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 											longueur_bande=rect.height;
 										}
 
-										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<4.0 && rapport>1.5){
+										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<3.5 && rapport>1.5){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 										}
-										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<4.0 && rapport>1.5){
+										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<3.5 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 											longueur_bande=rect.height;
 										}
 
-										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<4.0 && rapport>1.5){
+										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<3.5 && rapport>1.5){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 											longueur_bande=rect.height;
 										}
-										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<4.0 && rapport>1.5){
+										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<3.5 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 											longueur_bande=rect.height;
 										}
 
-										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<4.0 && rapport>1.5){
+										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<3.5 && rapport>1.5){
 											centre2=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
 											longueur_bande=rect.height;
 										}
-										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<4.0 && rapport>1.5){
+										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<3.5 && rapport>1.5){
 											centre1=mu[i].m10/mu[i].m00;
 											Perimetre_bandes=arcLength(contours[i],true);
 											largeur_bande=rect.width;
@@ -255,14 +257,15 @@ public:
 
 
 				}
-				cout<<"hauteur: \n"<<longueur_bande<<endl;
+				cout<<"\nhauteur: "<<longueur_bande<<endl;
 				//cout<<"hauteur, largeur, rapport: \n"<<longueur_bande<<", "<<largeur_bande<<", "<<rapport<<endl;
-				if(longueur_bande<180){
-					distance=(-0.00009)*longueur_bande*longueur_bande*longueur_bande;
-					distance+=0.0421*longueur_bande*longueur_bande;
-					distance-=6.2906*longueur_bande+371.59;
+				if(longueur_bande<320){
+					//bande 13cm:
+					distance=7502.7*pow(longueur_bande,-0.973);
+					//bande 12cm:
+					//distance=5502.9*pow(longueur_bande,-0.915);
 				}
-				cout<<"distance= \n"<<distance<<endl;
+				cout<<"\ndistance= "<<distance<<endl;
 
 
 				/*145cm -> perimetre = 105
