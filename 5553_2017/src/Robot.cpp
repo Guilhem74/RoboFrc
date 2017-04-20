@@ -24,6 +24,8 @@ float Perimetre_bandes=-1;
 float largeur_bande=-1;
 float longueur_bande=-1;
 float angle=0;
+extern float distance_vision;
+
 #include "WPILib.h"
 extern float P_COEFF_A;//0.017
 extern int TOLERANCE;
@@ -39,15 +41,12 @@ struct etape{
 #define GAUCHE true
 #define BLEU true
 #define ROUGE false
-#if MILLIEU==true && (ROUGE==true || BLEU==true)//Millieu
+
 struct etape Tableau_Actions[] {
-		{190*34,0, AVANCER},
-		{0,0,PINCE_H},
-		{-50*34,0, AVANCER},
-		{0,0,PINCE_V},
+		{100,0, AVANCER},
 		{0,0,FIN}
 };
-#elif MILLIEU==false && GAUCHE == true && BLEU ==true && ROUGE ==false//Gauche Bleu
+/*#elif MILLIEU==false && GAUCHE == true && BLEU ==true && ROUGE ==false//Gauche Bleu
 struct etape Tableau_Actions[] {
 		{187.56*34,0, AVANCER},
 		{0,60, TOURNER},
@@ -88,7 +87,7 @@ struct etape Tableau_Actions[] {
 		{0,0,PINCE_V},
 		{0,0,FIN}
 };
-#endif
+#endif*/
 
 
 class Robot: public frc::IterativeRobot {
@@ -150,7 +149,7 @@ public:
 				//rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
 				//cv::Scalar(255, 255, 255), 5);
 				cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
-				cv::inRange(mat2,cv::Scalar(0.0,50.0,0.0),cv::Scalar(33.0,205.0,128.0),mat);
+				cv::inRange(mat2,cv::Scalar(0.0,18.0,0.0),cv::Scalar(33.0,205.0,128.0),mat);
 				outputStream.PutFrame(mat);
 				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),4.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
 				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),2.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
@@ -164,29 +163,9 @@ public:
 				float centre1=-1,centre2=-1;
 				float hauteur=-1, largeur=-1, rapport=-1;
 				float perimetre_min=30;
-				float distance=-1;
 				largeur_bande=-1;
 				longueur_bande=-1;
-				/*if(contours.size()<4 && contours.size()>1){
-					for(int i = 0; i< contours.size(); i++)
-					{
-						Centre_bandes=0;
-						Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-						drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
-						mu[i] = moments( contours[i], false );
-						mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
-						cout<<"perimetre:"<<arcLength(contours[i],true)<<endl;
-						if(i==0) centre1=mu[i].m10/mu[i].m00;
-						else if(i==1 && abs(mu[1].m10/mu[1].m00-centre1)>30) centre2=mu[i].m10/mu[i].m00;
-						else if(i==2 && abs(mu[2].m10/mu[2].m00-centre1)>30) centre2=mu[i].m10/mu[i].m00;
-						if(abs(centre2-centre1)>30){
-								Centre_bandes=(centre1+centre2)/2;
-						}else Centre_bandes=-1;
-					}
-				}else{
-					Centre_bandes=-1;
-					cout<<"taille contour"<<contours.size()<<endl;
-				}*/
+
 				for(int i = 0; i< contours.size(); i++)
 				{
 										Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
@@ -257,76 +236,16 @@ public:
 
 
 				}
-				cout<<"\nhauteur: "<<longueur_bande<<endl;
+				//cout<<"\nhauteur: "<<longueur_bande<<endl;
 				//cout<<"hauteur, largeur, rapport: \n"<<longueur_bande<<", "<<largeur_bande<<", "<<rapport<<endl;
 				if(longueur_bande<320){
 					//bande 13cm:
-					distance=7502.7*pow(longueur_bande,-0.973);
+					distance_vision=7502.7*pow(longueur_bande,-0.973);
 					//bande 12cm:
 					//distance=5502.9*pow(longueur_bande,-0.915);
 				}
-				cout<<"\ndistance= "<<distance<<endl;
+				//cout<<"\ndistance= "<<distance_vision<<endl;
 
-
-				/*145cm -> perimetre = 105
-				hauteur = 39
-				largeur = 20
-
-				76cm -> 204
-				74
-				40
-
-				222cm -> 70
-				25
-				13
-
-				30cm ->
-				173
-				110//++
-
- perimetre:
- 66.4853
- Perimetre_bandes:
- 66.4853
- hauteur, largeur, rapport:
- 25, 13, 1.84615
- hauteur :-
- 25
- width :
- 13
- perimetre:
- 69.6569
- hauteur :
- 23
- width :
- 13
- perimetre:
- 65.0711
- Perimetre_bandes:
- 65.0711
- hauteur, largeur, rapport:
- 25, 13
-
-				//cout<<"Centre_bandes: \n"<<Centre_bandes<<endl;
-				//cout<<"Centre1, centre2 : \n"<<centre1<<" "<<centre2<<endl;
-				//cout<<"hauteur, largeur, rapport: \n"<<hauteur<<", "<<largeur_bande<<", "<<rapport<<endl;
-				//cout<<CB/contours.size()<<endl;
-
-				/*cv::Mat src=mat2;
-				Mat dst, cdst;
-				Canny(src, dst, 50, 200, 3);
-				cvtColor(dst, cdst, CV_GRAY2BGR);
-
-				vector<Vec4i> lines;
-				HoughLinesP(dst, lines, 1, CV_PI/2, 50, 50, 10 );
-				for( size_t i = 0; i < lines.size(); i++ )
-				{
-						 Vec4i l = lines[i];
-						 if(cv::norm(cv::Point(lines[1][0], lines[1][1]) - cv::Point(lines[1][2], lines[1][3]))<400)
-						 line( cdst, Point(l[0], l[1]), Point(l[2], l[3]), Scalar(0,0,255), 3, CV_AA);
-						 x=lines[1][1];
-						 //cout<<"grandeur lignes: "<<lines[1][0]<<endl;
-				}*/
 
 
 
@@ -421,7 +340,7 @@ public:
 
 
 
-				/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
+				/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)*/
 
 		/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 
@@ -430,9 +349,9 @@ public:
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}*/
-
-				BR.setRobotMode(MODE_MECA);
-				angle = gyro->GetAngle();
+		std::cout<<"gyro: "<<gyro->GetAngle()<<std:endl;
+				//BR.setRobotMode(MODE_MECA);
+				/*angle = gyro->GetAngle();
 				if(Centre_bandes<270 && Centre_bandes!=-1){
 					//BR.meca_gauche(0.5);
 					cout<<"gauche"<<endl;
@@ -484,6 +403,8 @@ public:
 					cout<<"avancer"<<endl;
 
 				}*/
+
+
 
 
 	}

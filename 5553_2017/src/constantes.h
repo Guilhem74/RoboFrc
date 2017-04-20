@@ -16,7 +16,7 @@
 #define BAC_HAUT 1
 #define BAC_BAS 0
 
-#define P_COEFF_L 0.00015
+#define P_COEFF_L 0.0008
 /* TABLEAU DE CABLAGE du ROBORIO
  *
  * 	RS-232	->
