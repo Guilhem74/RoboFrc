@@ -14,7 +14,7 @@
 float P_COEFF_A=0.04;//0.017
 int TOLERANCE=150;
 float distance_vision=-1;
-float cpt=0;
+float rampe=0;
 
 BaseRoulante::BaseRoulante():
 mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(2,3)
@@ -65,6 +65,7 @@ void BaseRoulante::reset()
 
 void BaseRoulante::setConsigne(double Longueur, double Angle)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
+	rampe=0;
 	Consigne_Dist=Longueur;
 	Consigne_Ang=Angle;
 	sommeErreursG=0;
@@ -90,17 +91,19 @@ double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
 int BaseRoulante::effectuerConsigne(double Angle_gyro)
 {
 	counteur_Fin++;
-	cpt+=0.001;
-	double moyenneGauche = 100-distance_vision;
-	double moyenneDroite = 100-distance_vision;
+	rampe+=0.01;
+	if(rampe>=1) rampe=1;
+	double moyenneGauche = -rampe*distance_vision;
+	double moyenneDroite = -rampe*distance_vision;
 	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
 	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneGauche)+PID_ANGLE(Consigne_Ang,Angle_gyro));
-	std::cout<<"\ncpt : "<<cpt<<std::endl;
-	std::cout<<"\nleft: "<<powerLeft<<" right: "<<powerRight<<"Angle :" << PID_ANGLE(Consigne_Ang,Angle_gyro)<<std::endl;
-	/*mecaFrontLeft.Set(powerLeft);
+	//std::cout<<"\ncpt : "<<cpt<<std::endl;
+	//std::cout<<"\nleft: "<<powerLeft<<" right: "<<powerRight<<"Angle :" << PID_ANGLE(Consigne_Ang,Angle_gyro)<<std::endl;
+	if(counteur_Fin>TOLERANCE) return 1;
+	mecaFrontLeft.Set(powerLeft);
 	mecaBackLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
-	mecaBackRight.Set(powerRight);*/
+	mecaBackRight.Set(powerRight);
 	return 0;
 }
 

@@ -43,7 +43,8 @@ struct etape{
 #define ROUGE false
 
 struct etape Tableau_Actions[] {
-		{100,0, AVANCER},
+		{0,0, AVANCER},
+		{-150,0, AVANCER},
 		{0,0,FIN}
 };
 /*#elif MILLIEU==false && GAUCHE == true && BLEU ==true && ROUGE ==false//Gauche Bleu
@@ -238,12 +239,13 @@ public:
 				}
 				//cout<<"\nhauteur: "<<longueur_bande<<endl;
 				//cout<<"hauteur, largeur, rapport: \n"<<longueur_bande<<", "<<largeur_bande<<", "<<rapport<<endl;
-				if(longueur_bande<320){
+				if(longueur_bande<320 && longueur_bande!=-1){
 					//bande 13cm:
-					distance_vision=7502.7*pow(longueur_bande,-0.973);
+					distance_vision=7502.7*pow(longueur_bande,-0.973)-60;
 					//bande 12cm:
 					//distance=5502.9*pow(longueur_bande,-0.915);
 				}
+				else distance_vision=-1;
 				//cout<<"\ndistance= "<<distance_vision<<endl;
 
 
@@ -287,8 +289,8 @@ public:
 			case AVANCER:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
-				P_COEFF_A=0.04;
-				TOLERANCE=150;
+				P_COEFF_A=0.07;
+				TOLERANCE=400;
 				break;
 			case TOURNER:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
@@ -342,14 +344,14 @@ public:
 
 				/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)*/
 
-		/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
-
+				if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 				{
 
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
-				}*/
-		std::cout<<"gyro: "<<gyro->GetAngle()<<std:endl;
+				}
+				cout<<"\ndistance= "<<distance_vision<<endl;
+			cout<<"gyro: "<<gyro->GetAngle()<<endl;
 				//BR.setRobotMode(MODE_MECA);
 				/*angle = gyro->GetAngle();
 				if(Centre_bandes<270 && Centre_bandes!=-1){
