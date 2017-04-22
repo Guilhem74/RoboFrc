@@ -7,8 +7,9 @@
 #include <BaseRoulante.h>
 #include <constantes.h>
 #include <CameraServer.h>
+#include <Ultrasonic.h>
 
-
+#include <I2C.h>
 #include <thread>
 #include <CameraServer.h>
 #include <IterativeRobot.h>
@@ -90,6 +91,12 @@ struct etape Tableau_Actions[] {
 #endif
 
 
+
+
+
+
+
+
 class Robot: public frc::IterativeRobot {
 public:
 
@@ -100,10 +107,11 @@ public:
 	BaseRoulante BR;
 	Servo* Plaque_Zeppelin; // servo min/max : 48/150
 	DoubleSolenoid* Pince_Vertical;
-
+	I2C *i2c = new I2C(I2C::Port::kOnboard, 2);
 	VictorSP* Treuil;
 	VictorSP* Pince_Roue;
 	Ultrasonic *Ultrason_Avant; // creates the ultra object
+	Ultrasonic *ultra;
 	Preferences *prefs;
 	//P
 	int Mode_Servo=0;
@@ -285,6 +293,8 @@ public:
 		visionThread.detach();
 		Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
 		prefs = Preferences::GetInstance();
+		//ultra = new Ultrasonic(5,4); // assigns ultra to be an ultrasonic sensor which uses DigitalOutput 1 for the echo pulse and DigitalInput 1 for the trigger pulse
+		//ultra->SetAutomaticMode(true); // turns on automatic mode
 
 	}
 
@@ -471,7 +481,13 @@ public:
 					if((throttle=(Joystick1->GetThrottle()-1))<=0)
 						Treuil->Set(throttle);
 
-
+			//int range = ultra->GetRangeMM();
+			//std::cout<<ultra<<"cm"<<std::endl;
+			char range = 0;
+			uint8_t arduinoData[1];
+			uint8_t blop[1];
+			i2c->Transaction(blop, 1, arduinoData, 1);
+			std::cout<<ultra<<"cm"<<std::endl;
 	}
 
 
