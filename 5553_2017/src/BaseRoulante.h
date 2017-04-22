@@ -39,7 +39,9 @@ public:
 	void meca_droite(double val);
 	void meca_gauche(double val);
 	void meca_avancer(double val);
-
+	void TestEncodeurs();
+//	double Getdistance(int droite);
+	double GetCmUltrason();
 	void setConsigne(double Longueur, double Angle);
 	int effectuerConsigne(double Angle_gyro);
 	void SetVitesseMax(double max);
@@ -52,7 +54,10 @@ public:
 	VictorSP_Rampe mecaBackLeft;
 	VictorSP_Rampe mecaFrontRight;
 	VictorSP_Rampe mecaBackRight;
+	AnalogInput *Ultrason;
+
 	DoubleSolenoid verins_BASE;
+	RobotDrive* R2D2;
 	double approach_speed;
 	double align_dist;
 	double align_marge;
@@ -79,7 +84,7 @@ private:
 	typedef std::chrono::milliseconds ms;
 	int robotMode;
 	float zCoeff = 0.5;
-	float coeff=0.2;
+	float coeff=1;
 	float sommeErreur=0;
 	int mode_auto;
 	std::chrono::_V2::system_clock::time_point t0 = Time::now();

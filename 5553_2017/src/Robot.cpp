@@ -120,7 +120,7 @@ struct etape Tableau_Actions[] {
 };*/
 //Coté
 struct etape Tableau_Actions[] {
-		{180*39,0, AVANCER},
+		{100,0, AVANCER},
 				/*{0,0,PINCE_H},
 				{-100*17.5,0, AVANCER},
 				{0,0,PINCE_V},*/
@@ -134,12 +134,10 @@ public:
 	Joystick* Joystick1;
 	ADXRS450_Gyro* gyro;
 	BaseRoulante BR;
-	Servo* Plaque_Zeppelin; // servo min/max : 48/150
 	DoubleSolenoid* Pince_Vertical;
-	DoubleSolenoid* Pince_Horizontal;
-	DoubleSolenoid* Bac;
+
 	VictorSP* Treuil;
-	Ultrasonic *Ultrason_Avant; // creates the ultra object
+	VictorSP* Pince;
 	Preferences *prefs;
 	//P
 	int Mode_Servo=0;
@@ -150,19 +148,9 @@ public:
 	double ecart_roues_largeur_mm = 1100;  //740
 	static void VisionThread() {
 			// Get the USB camera from CameraServer
-
+#if 0
 			cs::UsbCamera camera = CameraServer::GetInstance()->StartAutomaticCapture(0);
-<<<<<<< HEAD
-						// Set the resolution
-						camera.SetResolution(640, 480);
-						camera.SetFPS(20);
-						/*cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
-									camera2.SetResolution(160, 120);
-									camera2.SetFPS(5);*/
-						// Get a CvSink. This will capture Mats from the Camera
-						cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-			}
-=======
+
 			// Set the resolution
 			camera.SetResolution(640, 480);
 			camera.SetFPS(20);
@@ -293,11 +281,10 @@ public:
 				}*/
 
 
->>>>>>> origin/master
 
 				//outputStream.PutFrame(drawing);
 			}
-
+#endif
 	}
 
 
@@ -309,19 +296,19 @@ public:
 		gyro = new ADXRS450_Gyro(); 								// ï¿½ connecter sur SPI
 		gyro->Calibrate(); // initialisation de la position 0 du gyro
 
-		Plaque_Zeppelin =new Servo(5);
-		Plaque_Zeppelin->SetAngle(60);
-		Pince_Vertical= new DoubleSolenoid(4,5);
-		Pince_Horizontal= new DoubleSolenoid(6,7);
-		Bac= new DoubleSolenoid(2,3);
+		Pince_Vertical= new DoubleSolenoid(2,3);
+		/*Pince_Horizontal= new DoubleSolenoid(0,1);
+		Bac= new DoubleSolenoid(2,3);*/
 		Treuil=new VictorSP(4);
 		Treuil->Set(0);
+		Pince=new VictorSP(5);
+		Pince->Set(0);
 		robotMode = MODE_TANK; // on dï¿½marre en mode TANK par dï¿½faut
 		Joystick1 = new Joystick(0);								// ï¿½ connecter sur port USB0
 		std::thread visionThread(VisionThread);
 		visionThread.detach();
-		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-		Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
+		/*Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+		Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);*/
 		prefs = Preferences::GetInstance();
 		BR.setRobotMode(MODE_TANK);
 
@@ -347,7 +334,6 @@ public:
 				TOLERANCE=150;
 				break;
 			case PINCE_H:
-				Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
 				frc::Wait(0.5);
 				etape_suivante++;
 				etapeSuivante();
@@ -376,9 +362,9 @@ public:
 		etape_suivante=0;
 		etape_actuelle=0;
 		etapeSuivante();
-		Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
-		Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
-		Bac->Set(frc::DoubleSolenoid::kReverse);
+		/*Pince_Horizontal->Set(frc::DoubleSolenoid::kForward);
+		Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+		Bac->Set(frc::DoubleSolenoid::kReverse);*/
 
 
 	}
@@ -386,19 +372,19 @@ public:
 	void AutonomousPeriodic() {
 
 
-		/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
+		if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)
 				{
 
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
-				}*/
-		BR.setRobotMode(MODE_MECA);
+				}
+		/*BR.setRobotMode(MODE_MECA);
 				if(Centre_bandes<270 && Centre_bandes!=-1){
-					BR.meca_gauche(0.4);
+					BR.meca_gauche(0.7);
 					cout<<"gauche"<<endl;
 				}
 				else if(Centre_bandes>370) {
-					BR.meca_droite(0.4);
+					BR.meca_droite(0.7);
 					cout<<"droite"<<endl;
 				}
 				else if(Centre_bandes==-1){
@@ -413,7 +399,7 @@ public:
 
 				}
 
-				if(Perimetre_bandes<250 && Perimetre_bandes!=-1) BR.meca_avancer(0.4);
+				if(Perimetre_bandes<250 && Perimetre_bandes!=-1) BR.meca_avancer(0.4);*/
 		//Plaque_Zeppelin->SetAngle(48);
 
 	}
@@ -421,7 +407,7 @@ public:
 	void TeleopInit() {
 		std::cout<<" DÃ©but tÃ©lÃ©opÃ©rÃ©"<<std::endl;
 				BR.reset();
-				BR.SetVitesseMax(30.0); // m/s
+				BR.SetVitesseMax(50.0); // m/s
 				prefs->PutBoolean("LED_PINCEH_OUVERTE",false);
 				prefs->PutBoolean("LED_PINCEV_MONTE",true);
 
@@ -430,8 +416,8 @@ public:
 
 	void TeleopPeriodic() {
 
-
-
+		//std::cout<<"droite : "<<BR.Getdistance(1)<<std::endl;
+		//std::cout<<"gauche : "<<BR.Getdistance(0)<<std::endl;
 		if(Joystick1->GetRawButton(BTN_TANK))
 					{
 						BR.setRobotMode(MODE_TANK);
@@ -442,11 +428,10 @@ public:
 						BR.setRobotMode(MODE_MECA);
 					}
 
-					if (Joystick1->GetX() || Joystick1->GetY() || Joystick1->GetZ() )
-					{
+
 						BR.mvtJoystick(Joystick1,gyro);
-					}
-					if (Joystick1->GetRawButton(3))
+
+					/*if (Joystick1->GetRawButton(3))
 					{
 						Pince_Horizontal->Set(frc::DoubleSolenoid::kReverse);
 
@@ -493,15 +478,33 @@ public:
 					{
 						Plaque_Zeppelin->SetAngle(150);
 					}
+*/
+					/*	throttle=-Joystick1->GetThrottle();
+							std::cout<<"   :"<<throttle<<std::endl;
+												Pince->Set(throttle);*/
 
-			BR.setRobotMode(MODE_TANK);
-			Wait(1);
-			BR.setRobotMode(MODE_MECA);
-			Wait(1);
-			BR.setRobotMode(MODE_TANK);
-			Wait(1);
-			BR.setRobotMode(MODE_MECA);
-			Wait(1);
+					if (Joystick1->GetRawButton(3))
+					{
+						Pince->Set(-0.7);
+						Wait(0.3);
+						Pince->Set(0.0);
+
+					}
+					if (Joystick1->GetRawButton(4))
+					{
+						Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
+
+					}
+					if (Joystick1->GetRawButton(5))
+					{
+						Pince->Set(0.7);
+						Pince_Vertical->Set(frc::DoubleSolenoid::kForward);
+						Wait(0.3);
+						Pince->Set(0.0);
+					}
+					BR.GetCmUltrason();
+
+
 	}
 
 

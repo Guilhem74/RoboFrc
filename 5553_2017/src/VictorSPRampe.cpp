@@ -16,11 +16,14 @@ VictorSP_Rampe::VictorSP_Rampe(
 		uint32_t B_encode,
 		bool invert)
 : moteur(channel_VictorSP),
-  codeur(A_encode, B_encode,invert,Encoder::k4X)
+  codeur(A_encode, B_encode,invert,Encoder::k2X)
 {
-	codeur.SetSamplesToAverage(5);
+
+	codeur.SetSamplesToAverage(127);
 	codeur.SetMinRate(1.0);
 	codeur.SetDistancePerPulse(diametreMillimetre*M_PI/360);
+
+
 }
 
 VictorSP_Rampe::~VictorSP_Rampe() {
@@ -155,4 +158,8 @@ void VictorSP_Rampe::setCoeffAcceleration(float coeff)
 float VictorSP_Rampe::getCoeffAcceleration()
 {
 	return coeffAcceleration;
+}
+VictorSP* VictorSP_Rampe::getVictorSP()
+{
+	return &moteur;
 }
