@@ -42,7 +42,9 @@ public:
 
 	void meca_tourne_gauche(double val);
 	void meca_tourne_droite(double val);
-
+	void ConvertJoystick(double x, double y, double z);
+	void NewMecanumDrive(double magnitude, double direction, double rotation);
+	double Ecrete(double val);
 
 
 	void setConsigne(double Longueur, double Angle);
