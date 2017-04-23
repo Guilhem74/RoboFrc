@@ -12,12 +12,19 @@
 #include <constantes.h>
 
 float P_COEFF_A=0.04;//0.017
+float P_COEFF_L=0.04;//0.017
+
 int TOLERANCE=150;
 float distance_vision=-1;
 float rampe=0;
+extern float Centre_bandes;
+float vitesse_virage=0;
+double somme_erreur=0;
+double erreur_precedente=0;
+double delta_erreur=0;
 
 BaseRoulante::BaseRoulante():
-mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(2,3)
+mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(1,0)
 {
 		// arr�t des moteurs
 		mecaFrontLeft.Set(0.0);
@@ -66,6 +73,7 @@ void BaseRoulante::reset()
 void BaseRoulante::setConsigne(double Longueur, double Angle)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
 	rampe=0;
+	vitesse_virage=0;
 	Consigne_Dist=Longueur;
 	Consigne_Ang=Angle;
 	sommeErreursG=0;
@@ -84,7 +92,11 @@ double BaseRoulante::PID_ANGLE(double Angle, double Angle_gyro)
 double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
 	double erreur=consigne_L-valeur_Encodeur;
-	return P_COEFF_L*erreur;
+	delta_erreur=erreur-erreur_precedente;
+	erreur_precedente=erreur;
+	somme_erreur+=erreur;
+
+	return P_COEFF_L*erreur+I_COEFF_L*somme_erreur+D_COEFF_L*delta_erreur;
 
 }
 
@@ -95,11 +107,35 @@ int BaseRoulante::effectuerConsigne(double Angle_gyro)
 	if(rampe>=1) rampe=1;
 	double moyenneGauche = -rampe*distance_vision;
 	double moyenneDroite = -rampe*distance_vision;
+	/*if(GAUCHE==true){
+		if(Centre_bandes>340)
+			vitesse_virage+=0.001;
+	}
+	else if(MILLIEU==false){
+		if(Centre_bandes<300)
+					vitesse_virage-=0.01;
+					std::cout<<"\nvaleur virage"<<vitesse_virage<<std::endl;
+	}*/
+	std::cout<<moyenneDroite<<" d "<< Consigne_Dist<<std::endl;
+
 	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
 	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneGauche)+PID_ANGLE(Consigne_Ang,Angle_gyro));
 	//std::cout<<"\ncpt : "<<cpt<<std::endl;
 	//std::cout<<"\nleft: "<<powerLeft<<" right: "<<powerRight<<"Angle :" << PID_ANGLE(Consigne_Ang,Angle_gyro)<<std::endl;
-	if(counteur_Fin>TOLERANCE) return 1;
+	/*if(distance_vision==-1) {
+		std::cout<<"\narret"<<std::endl;
+		if(powerRight>0) powerRight=-0.3;
+		else powerRight=0.3;
+		if(powerLeft>0) powerLeft=-0.3;
+				else powerLeft=0.3;
+	}*/
+	//std::cout<<"\nerreur : "<<abs(distance_vision-Consigne_Dist)<<std::endl;
+	if(abs(distance_vision-Consigne_Dist)<25)
+		{
+		return 1;
+		}
+	std::cout<<powerRight<<" DDFE "<< powerLeft<<std::endl;
+
 	mecaFrontLeft.Set(powerLeft);
 	mecaBackLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);

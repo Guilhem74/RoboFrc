@@ -7,7 +7,10 @@
 #define BTN_TANK 1
 #define BTN_MECA 2
 #define BTN_DEPOSE_ROUE_AUTO 7
-
+#define MILLIEU false
+#define GAUCHE false
+#define BLEU true
+#define ROUGE false
 
 #define MODE_APPROACH 0
 #define MODE_ALIGN 12
@@ -16,7 +19,9 @@
 #define BAC_HAUT 1
 #define BAC_BAS 0
 
-#define P_COEFF_L 0.0021
+#define I_COEFF_L 0.0000
+#define D_COEFF_L 0.00
+
 /* TABLEAU DE CABLAGE du ROBORIO
  *
  * 	RS-232	->
