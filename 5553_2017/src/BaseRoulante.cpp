@@ -17,12 +17,9 @@ float P_COEFF_L=0.04;//0.017
 int TOLERANCE=150;
 float distance_vision=-1;
 float rampe=0;
-extern float Centre_bandes;
-float vitesse_virage=0;
 double somme_erreur=0;
 double erreur_precedente=0;
 double delta_erreur=0;
-float virage=0;
 BaseRoulante::BaseRoulante():
 mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(1,0)
 {
@@ -73,14 +70,13 @@ void BaseRoulante::reset()
 void BaseRoulante::setConsigne(double Longueur, double Angle)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
 	rampe=0;
-	virage=0;
-	vitesse_virage=0;
 	Consigne_Dist=Longueur;
 	Consigne_Ang=Angle;
 	sommeErreursG=0;
 	sommeErreursD=0;
 	Erreur_Precedente_G=0;
 	Erreur_Precedente_D=0;
+	counteur_Fin=0;
 	reset();
 }
 
@@ -104,52 +100,25 @@ double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
 int BaseRoulante::effectuerConsigne(double Angle_gyro)
 {
 	counteur_Fin++;
+
 	rampe+=0.01;
 	if(rampe>=1) rampe=1;
 	double moyenneGauche = -rampe*distance_vision;
 	double moyenneDroite = -rampe*distance_vision;
-	std::cout<<"distance"<<distance_vision<<std::endl;
-	/*if(GAUCHE==true){
-		if(Centre_bandes>340)
-			vitesse_virage+=0.001;
-	}
-	else if(MILLIEU==false){
-		if(Centre_bandes<300)
-					vitesse_virage-=0.01;
-					std::cout<<"\nvaleur virage"<<vitesse_virage<<std::endl;
-	}*/
-	//std::cout<<moyenneDroite<<" d "<< Consigne_Dist<<std::endl;
-
-
 	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
 	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneGauche)+PID_ANGLE(Consigne_Ang,Angle_gyro));
-	//std::cout<<"\ncpt : "<<cpt<<std::endl;
-	//std::cout<<"\nleft: "<<powerLeft<<" right: "<<powerRight<<"Angle :" << PID_ANGLE(Consigne_Ang,Angle_gyro)<<std::endl;
 	if(distance_vision<Consigne_Dist+10) {
-		std::cout<<"\narret"<<std::endl;
 		if(powerRight>0) powerRight=-0.03;
 		else powerRight=0.03;
 		if(powerLeft>0) powerLeft=-0.03;
 				else powerLeft=0.3;
 	}
-	//std::cout<<"\nerreur : "<<abs(distance_vision-Consigne_Dist)<<std::endl;
 	if(abs(distance_vision-Consigne_Dist)<5)
 		{
 			std::cout<<"\nArrivée"<<std::endl;
 			return 1;
 		}
-	//std::cout<<powerRight<<" DDFE "<< powerLeft<<std::endl;
-	/*if(Centre_bandes<280){
-		std::cout<<"\nvirage"<<std::endl;
-			virage+=0.02;
-			powerLeft-=virage;
-	}
-	if(Centre_bandes>380){
-		std::cout<<"\nvirage"<<std::endl;
-
-				virage+=0.02;
-				powerRight-=virage;
-	}*/
+	if(counteur_Fin>TOLERANCE) return 1;
 	mecaFrontLeft.Set(powerLeft);
 	mecaBackLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
@@ -215,67 +184,24 @@ void BaseRoulante::mvtJoystick(Joystick *joystick, ADXRS450_Gyro* gyro, double a
 			x=0;
 		if(y>=-0.2 && y<=0.2)
 			y=0;
+		if(z>=-0.2 && z<=0.2)
+					z=0;
 
 
-		double angle = gyro->GetAngle();
-		anglevoulu +=z;
-		double anglecalc = anglevoulu + angle;
-		anglecalc = (anglecalc/10);
-		std::cout<<"gyro"<<angle<<std::endl;
-		std::cout<<"angle_voulu"<<anglevoulu<<std::endl;
-		std::cout<<"angle_calc"<<anglecalc<<std::endl;
-		std::cout<<"FrontRight"<<y+ -x + anglecalc<<std::endl;
-		std::cout<<"BackRight"<<y+x + anglecalc<<std::endl;
-		std::cout<<"FrontLeft"<<-y -x + anglecalc<<std::endl;
-		std::cout<<"BackLeft"<<-y+x+anglecalc<<std::endl;
-/*		mecaFrontRight.Set(y+ -x + anglecalc);
-		mecaBackRight.Set(y+x + anglecalc);
-		mecaFrontLeft.Set(-y -x + anglecalc);
-		mecaBackLeft.Set(-y+x+anglecalc);*/
-		(mecaFrontRight.getVictorSP())->Set(y+ -x + anglecalc);
-		(mecaBackRight.getVictorSP())->Set(y +x + anglecalc);
-		(mecaFrontLeft.getVictorSP())->Set(-y -x + anglecalc);
-		(mecaBackLeft.getVictorSP())->Set(-y +x +anglecalc);
-
-
+		mecaFrontRight.Set(y+ -x + z);
+		mecaBackRight.Set(y +x + z);
+		mecaFrontLeft.Set(-y -x + z);
+		mecaBackLeft.Set(-y +x +z);
 		//R2D2->MecanumDrive_Cartesian(x,y,z,angle);
 	}
 }
-void BaseRoulante::meca_droite(double val)
-{
-				mecaFrontRight.Set(-val);
-				mecaBackRight.Set(val);
-				mecaFrontLeft.Set(val);
-				mecaBackLeft.Set(-val);
-}
-void BaseRoulante::meca_gauche(double val)
-{
-				mecaFrontRight.Set(val);
-				mecaBackRight.Set(-val);
-				mecaFrontLeft.Set(-val);
-				mecaBackLeft.Set(val);
-}
+
 void BaseRoulante::meca_avancer(double val)
 {
-				mecaFrontRight.Set(val);
-				mecaBackRight.Set(val);
-				mecaFrontLeft.Set(-val);
-				mecaBackLeft.Set(-val);
-}
-void BaseRoulante::meca_tourne_droite(double val)
-{
-				mecaFrontRight.Set(-val);
-				mecaBackRight.Set(-val);
-				mecaFrontLeft.Set(-val);
-				mecaBackLeft.Set(-val);
-}
-void BaseRoulante::meca_tourne_gauche(double val)
-{
-
-				mecaFrontRight.Set(val);
-				mecaBackRight.Set(val);
-				mecaFrontLeft.Set(val);
-				mecaBackLeft.Set(val);
+		mecaFrontRight.Set(val);
+		mecaBackRight.Set(val);
+		mecaFrontLeft.Set(-val);
+		mecaBackLeft.Set(-val);
 }
 
 

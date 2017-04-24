@@ -64,7 +64,7 @@ public:
 	double rot_speed;
 	double rot_marge;
 	 int counteur_Fin=0;
-	int count;
+
 	static const int Nintegration=80;
 	int indiceIntegration=0;
 	double Consigne_Dist=0, Consigne_Ang=0;
@@ -76,8 +76,6 @@ public:
 	double Erreur_Precedente_G=0, Erreur_Precedente_D=0; // erreurs précédentes
 	float powerLeft=0;
 	float powerRight=0;
-	double angleini = 0;
-	double anglevoulu = 0;
 private:
 	typedef std::chrono::high_resolution_clock Time;
 	typedef std::chrono::duration<float> deltaT;
@@ -89,7 +87,6 @@ private:
 	float previousPower = 0.0f;
 	float xprecedent=0.0f;
 	float coeffAcceleration=0.003f;
-	int powerActuel;
 };
 
 
