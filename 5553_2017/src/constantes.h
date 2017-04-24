@@ -19,8 +19,8 @@
 #define BAC_HAUT 1
 #define BAC_BAS 0
 
-#define I_COEFF_L 0.0000
-#define D_COEFF_L 0.00
+#define I_COEFF_L 0.0000006
+#define D_COEFF_L 0.0000026
 
 /* TABLEAU DE CABLAGE du ROBORIO
  *

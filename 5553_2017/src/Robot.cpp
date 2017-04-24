@@ -26,12 +26,13 @@ float largeur_bande=-1;
 float longueur_bande=-1;
 float angle=0;
 extern float distance_vision;
-
+int reconnaissance_visuelle=1;
 #include "WPILib.h"
 extern float P_COEFF_A;//0.017
 extern float P_COEFF_L;
 extern int TOLERANCE;
-
+extern float somme_erreur;
+extern float delta_erreur;
 enum type_etape {AUCUN, FIN, AVANCER, RECULER, TOURNER, ATTENDRE,PINCE_H,BAC,PINCE_V};
 
 struct etape{
@@ -41,11 +42,18 @@ struct etape{
 };
 
 struct etape Tableau_Actions[] {
-		{30,0, AVANCER},
-		{0,0, PINCE_V},
-		{-200,0, RECULER},
+		{20,0, AVANCER},
+		//{0,0, PINCE_V},
+		{-190,0, RECULER},
 		{0,0,FIN}
 };
+/*struct etape Tableau_Actions[] {
+		{110,0, AVANCER},
+		{0,19, TOURNER},
+		{40,0, AVANCER},
+		{0,0,FIN}
+};*/
+
 /*#if MILLIEU==true && GAUCHE == false && BLEU ==true && ROUGE ==false
 struct etape Tableau_Actions[] {
 		{0,0, AVANCER},
@@ -124,158 +132,165 @@ public:
 			// Set the resolution
 			camera.SetResolution(640, 480);
 			camera.SetFPS(20);
-			camera.SetExposureManual(3);
-			//camera.SetExposureAuto();
-
-			/*cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
-						camera2.SetResolution(160, 120);
-						camera2.SetFPS(5);*/
-			// Get a CvSink. This will capture Mats from the Camera
-			cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
-			// Setup a CvSource. This will send images back to the Dashboard
-
-			cs::CvSource outputStream = CameraServer::GetInstance()->
-							PutVideo("Test", 640, 480);
-
-			// Mats are very memory expensive. Lets reuse this Mat.
-			cv::Mat mat;
-			cv::Mat mat2;
-			while (true) {
-				cv::Mat Erode_Kernel;
-				// Tell the CvSink to grab a frame from the camera and put it
-				// in the source mat.  If there is an error notify the output.
-				if (cvSink.GrabFrame(mat) == 0) {
-					// Send the output the error.
-					//outputStream.NotifyError(cvSink.GetError());
-					// skip the rest of the current iteration
-					continue;
-				}
-				// Put a rectangle on the image
-				//rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
-				//cv::Scalar(255, 255, 255), 5);
-				cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
-				cv::inRange(mat2,cv::Scalar(0.0,40.0,0.0),cv::Scalar(24.0,205.0,128.0),mat);
-				outputStream.PutFrame(mat);
-				cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),4.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
-				cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),2.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
-				vector<vector<Point> > contours;
-				vector<Vec4i> hierarchy;
-
-				findContours(mat,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,Point(0, 0));
-				Mat drawing = Mat::zeros( mat.size(), CV_8UC3 );
-				vector<Point2f> mc( contours.size() );
-				vector<Moments> mu(contours.size() );
-				float centre1=-1,centre2=-1;
-				float hauteur=-1, largeur=-1, rapport=-1;
-				float perimetre_min=30;
-				float contours_acceptes=0;
-				largeur_bande=-1;
-				longueur_bande=-1;
-				float rapport_min=1.9;
-				float rapport_max=3.6;
-				for(int i = 0; i< contours.size(); i++)
-				{
-										Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-										drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
-										mu[i] = moments( contours[i], false );
-										mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
-										cv::Rect rect=boundingRect(contours[i]);
-										hauteur=float(rect.height);
-										largeur=float(rect.width);
-										rapport=hauteur/largeur;
-										//cout<<"hauteur : \n"<<rect.height<<endl;
-										//cout<<"width : \n"<<rect.width<<endl;
-										//cout<<"perimetre: \n"<<arcLength(contours[i],true)<<endl;
-
-										if(i==0 && arcLength(contours[0],true)>perimetre_min && rapport<rapport_max && rapport>rapport_min){
-											centre1=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-											longueur_bande=rect.height;
-											contours_acceptes++;
-										}
-
-										if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<rapport_max && rapport>rapport_min){
-											centre2=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											longueur_bande=rect.height;
-											largeur_bande=rect.width;
-											contours_acceptes++;
-										}
-										else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<rapport_max && rapport>rapport_min){
-											centre1=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-											longueur_bande=rect.height;
-											contours_acceptes++;
-										}
-
-										if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<rapport_max && rapport>rapport_min){
-											centre2=mu[i].m10/mu[i].m00;
-											contours_acceptes++;
-											centre2=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-											longueur_bande=rect.height;
-
-										}
-										else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<rapport_max && rapport>rapport_min){
-											centre1=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-											longueur_bande=rect.height;
-											contours_acceptes++;
-										}
-
-										if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<rapport_max && rapport>rapport_min){
-											centre2=mu[i].m10/mu[i].m00;
-											contours_acceptes++;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-											longueur_bande=rect.height;
-											contours_acceptes++;
-										}
-										else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<rapport_max && rapport>rapport_min){
-											centre1=mu[i].m10/mu[i].m00;
-											Perimetre_bandes=arcLength(contours[i],true);
-											largeur_bande=rect.width;
-											longueur_bande=rect.height;
-											contours_acceptes++;
-										}
 
 
-										//cout<<"Perimetre_bandes: "<<Perimetre_bandes<<endl;
+					camera.SetExposureManual(3);
+					//camera.SetExposureAuto();
+
+					/*cs::UsbCamera camera2 = CameraServer::GetInstance()->StartAutomaticCapture(1);
+								camera2.SetResolution(160, 120);
+								camera2.SetFPS(5);*/
+					// Get a CvSink. This will capture Mats from the Camera
+					cs::CvSink cvSink = CameraServer::GetInstance()->GetVideo();
+					// Setup a CvSource. This will send images back to the Dashboard
+
+					cs::CvSource outputStream = CameraServer::GetInstance()->
+									PutVideo("Test", 640, 480);
+
+					// Mats are very memory expensive. Lets reuse this Mat.
+					cv::Mat mat;
+					cv::Mat mat2;
+					while (reconnaissance_visuelle==1) {
+						cv::Mat Erode_Kernel;
+						// Tell the CvSink to grab a frame from the camera and put it
+						// in the source mat.  If there is an error notify the output.
+						if (cvSink.GrabFrame(mat) == 0) {
+							// Send the output the error.
+							//outputStream.NotifyError(cvSink.GetError());
+							// skip the rest of the current iteration
+							continue;
+						}
+						// Put a rectangle on the image
+						//rectangle(mat, cv::Point(100, 100), cv::Point(400, 400),
+						//cv::Scalar(255, 255, 255), 5);
+						cv::cvtColor(mat,mat2,cv::COLOR_BGR2RGB);
+						cv::inRange(mat2,cv::Scalar(0.0,44.0,0.0),cv::Scalar(100.0,240.0,190.0),mat);
+
+						cv::erode(mat,mat2,Erode_Kernel,cv::Point(-1, -1),3.0,cv::BORDER_CONSTANT,cv::Scalar(-1));
+						cv::dilate(mat2,mat,Erode_Kernel,cv::Point(-1,-1),3.0, cv::BORDER_CONSTANT,cv::Scalar(-1));
+						outputStream.PutFrame(mat);
+						vector<vector<Point> > contours;
+						vector<Vec4i> hierarchy;
+
+						findContours(mat,contours,hierarchy,CV_RETR_TREE,CV_CHAIN_APPROX_SIMPLE,Point(0, 0));
+						Mat drawing = Mat::zeros( mat.size(), CV_8UC3 );
+						vector<Point2f> mc( contours.size() );
+						vector<Moments> mu(contours.size() );
+						float centre1=-1,centre2=-1;
+						float hauteur=-1, largeur=-1, rapport=-1;
+						float perimetre_min=30;
+						float contours_acceptes=0;
+						largeur_bande=-1;
+						longueur_bande=-1;
+						float rapport_min=1.9;
+						float rapport_max=4.0;
+						for(int i = 0; i< contours.size(); i++)
+						{
+												Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+												drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
+												mu[i] = moments( contours[i], false );
+												mc[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 );
+												cv::Rect rect=boundingRect(contours[i]);
+												hauteur=float(rect.height);
+												largeur=float(rect.width);
+												rapport=hauteur/largeur;
+												//cout<<"hauteur : \n"<<rect.height<<endl;
+												//cout<<"width : \n"<<rect.width<<endl;
+												//cout<<"perimetre: \n"<<arcLength(contours[i],true)<<endl;
+
+												if(i==0 && arcLength(contours[0],true)>perimetre_min && rapport<rapport_max && rapport>rapport_min){
+													centre1=mu[i].m10/mu[i].m00;
+													Perimetre_bandes=arcLength(contours[i],true);
+													largeur_bande=rect.width;
+													longueur_bande=rect.height;
+													contours_acceptes++;
+												}
+
+												if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<rapport_max && rapport>rapport_min){
+													centre2=mu[i].m10/mu[i].m00;
+													Perimetre_bandes=arcLength(contours[i],true);
+													longueur_bande=rect.height;
+													largeur_bande=rect.width;
+													contours_acceptes++;
+												}
+												else if(i==1 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<rapport_max && rapport>rapport_min){
+													centre1=mu[i].m10/mu[i].m00;
+													Perimetre_bandes=arcLength(contours[i],true);
+													largeur_bande=rect.width;
+													longueur_bande=rect.height;
+													contours_acceptes++;
+												}
+
+												if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<rapport_max && rapport>rapport_min){
+													centre2=mu[i].m10/mu[i].m00;
+													contours_acceptes++;
+													centre2=mu[i].m10/mu[i].m00;
+													Perimetre_bandes=arcLength(contours[i],true);
+													largeur_bande=rect.width;
+													longueur_bande=rect.height;
+
+												}
+												else if(i==2 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<rapport_max && rapport>rapport_min){
+													centre1=mu[i].m10/mu[i].m00;
+													Perimetre_bandes=arcLength(contours[i],true);
+													largeur_bande=rect.width;
+													longueur_bande=rect.height;
+													contours_acceptes++;
+												}
+
+												if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1!=-1 && rapport<rapport_max && rapport>rapport_min){
+													centre2=mu[i].m10/mu[i].m00;
+													contours_acceptes++;
+													Perimetre_bandes=arcLength(contours[i],true);
+													largeur_bande=rect.width;
+													longueur_bande=rect.height;
+													contours_acceptes++;
+												}
+												else if(i==3 && arcLength(contours[0],true)>perimetre_min && centre1==-1 && rapport<rapport_max && rapport>rapport_min){
+													centre1=mu[i].m10/mu[i].m00;
+													Perimetre_bandes=arcLength(contours[i],true);
+													largeur_bande=rect.width;
+													longueur_bande=rect.height;
+													contours_acceptes++;
+												}
 
 
-				}
-				//cout<<"\nNombre de contours : "<<contours_acceptes<<endl;
-
-				if(centre1!=-1 && centre2!=-1){
-							Centre_bandes=(centre1+centre2)/2;
-				}
-				else if(centre1!=-1){
-							//cout<<"une seule bande visible"<<endl;
-							Centre_bandes=-1;
-				}
-				else{
-							Centre_bandes=-1;
-							Perimetre_bandes=-1;
-				}
-				//cout<<"\nlargeur: "<<largeur_bande<<endl;
-				//cout<<"\nhauteur: "<<longueur_bande<<endl;
-				//cout<<"hauteur, largeur, rapport: \n"<<longueur_bande<<", "<<largeur_bande<<", "<<rapport<<endl;
-				if(longueur_bande<320 && longueur_bande!=-1){
-					//bande 13cm:
-					distance_vision=7502.7*pow(longueur_bande,-0.973)-23;
-					//bande 12cm:
-					//distance=5502.9*pow(longueur_bande,-0.915);
-				}
-				else distance_vision=-1;
-				//cout<<"\ndistance= "<<distance_vision<<endl;
+												//cout<<"Perimetre_bandes: "<<Perimetre_bandes<<endl;
 
 
-				//outputStream.PutFrame(drawing);
+						}
+						//cout<<"\nNombre de contours : "<<contours_acceptes<<endl;
+
+						if(centre1!=-1 && centre2!=-1){
+									Centre_bandes=(centre1+centre2)/2;
+						}
+						else if(centre1!=-1){
+									//cout<<"une seule bande visible"<<endl;
+									Centre_bandes=-1;
+						}
+						else{
+									Centre_bandes=-1;
+									Perimetre_bandes=-1;
+						}
+						//cout<<"\nlargeur: "<<largeur_bande<<endl;
+						//cout<<"\nhauteur: "<<longueur_bande<<endl;
+						//cout<<"hauteur, largeur, rapport: \n"<<longueur_bande<<", "<<largeur_bande<<", "<<rapport<<endl;
+						if(longueur_bande<320 && longueur_bande!=-1){
+							//bande 13cm:
+							distance_vision=7502.7*pow(longueur_bande,-0.973)-23;
+							//bande 12cm:
+							//distance=5502.9*pow(longueur_bande,-0.915);
+						}
+						else distance_vision=-1;
+
+						//cout<<"\ndistance= "<<distance_vision<<endl;
+
+
+						//outputStream.PutFrame(drawing);
+
+
 			}
+					camera.SetExposureAuto();
 
 	}
 
@@ -313,7 +328,7 @@ public:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
 				P_COEFF_A=0.07;
-				P_COEFF_L=0.0015;
+				P_COEFF_L=0.00132;
 
 				TOLERANCE=240;
 				break;
@@ -328,8 +343,8 @@ public:
 			case TOURNER:
 				BR.setConsigne(Tableau_Actions[etape_actuelle].param,Tableau_Actions[etape_actuelle].param2);
 				etape_suivante++;
-				P_COEFF_A=0.017;
-				TOLERANCE=100;
+				P_COEFF_A=0.027;
+				TOLERANCE=200;
 				break;
 			case PINCE_H:
 
@@ -367,9 +382,12 @@ public:
 		etapeSuivante();
 		Pince_Vertical->Set(frc::DoubleSolenoid::kReverse);
 
-		angleini = gyro->GetAngle();
-
+		//angleini = gyro->GetAngle();
+		gyro->Reset();
 		angle=gyro->GetAngle();
+		somme_erreur=0;
+		delta_erreur=0;
+		reconnaissance_visuelle=1;
 
 
 
@@ -378,14 +396,18 @@ public:
 	void AutonomousPeriodic() {
 
 
+		reconnaissance_visuelle=1;
 
-				/*if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)*/
+				//if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER)*/
 
 				if(Tableau_Actions[etape_actuelle].type==AVANCER||Tableau_Actions[etape_actuelle].type==TOURNER||Tableau_Actions[etape_actuelle].type==RECULER)
 				{
 					if(BR.effectuerConsigne(gyro->GetAngle())==1)
 						etapeSuivante();
 				}
+				else BR.meca_avancer(0);
+		//cout<<"\nangle :"<<gyro->GetAngle()<<endl;
+
 
 				/*cout<<"\nCentre bandes"<<Centre_bandes<<endl;
 				cout<<"\ndistance= "<<distance_vision<<endl;
@@ -439,6 +461,7 @@ public:
 				BR.reset();
 				BR.SetVitesseMax(30.0); // m/s
 		angleini = gyro->GetAngle();
+		reconnaissance_visuelle=0;
 
 
 	}
@@ -446,6 +469,7 @@ public:
 	void TeleopPeriodic() {
 
 
+		reconnaissance_visuelle=0;
 
 		if(Joystick1->GetRawButton(BTN_TANK))
 					{

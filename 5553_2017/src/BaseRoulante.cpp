@@ -22,7 +22,7 @@ float vitesse_virage=0;
 double somme_erreur=0;
 double erreur_precedente=0;
 double delta_erreur=0;
-
+float virage=0;
 BaseRoulante::BaseRoulante():
 mecaFrontLeft(0,0,1,1),mecaBackLeft(1,2,3,1),mecaFrontRight(3,4,5,0),mecaBackRight(2,6,7,0), verins_BASE(1,0)
 {
@@ -73,6 +73,7 @@ void BaseRoulante::reset()
 void BaseRoulante::setConsigne(double Longueur, double Angle)
 {//Met a jour les valeurs de consigne + raz les valeurs d'int�gration de l'assert
 	rampe=0;
+	virage=0;
 	vitesse_virage=0;
 	Consigne_Dist=Longueur;
 	Consigne_Ang=Angle;
@@ -95,7 +96,7 @@ double BaseRoulante::PID_DISTANCE(double consigne_L, double valeur_Encodeur)
 	delta_erreur=erreur-erreur_precedente;
 	erreur_precedente=erreur;
 	somme_erreur+=erreur;
-
+	std::cout<<"\nerreur: "<<P_COEFF_L*erreur+I_COEFF_L*somme_erreur+D_COEFF_L*delta_erreur<<std::endl;
 	return P_COEFF_L*erreur+I_COEFF_L*somme_erreur+D_COEFF_L*delta_erreur;
 
 }
@@ -107,6 +108,7 @@ int BaseRoulante::effectuerConsigne(double Angle_gyro)
 	if(rampe>=1) rampe=1;
 	double moyenneGauche = -rampe*distance_vision;
 	double moyenneDroite = -rampe*distance_vision;
+	std::cout<<"distance"<<distance_vision<<std::endl;
 	/*if(GAUCHE==true){
 		if(Centre_bandes>340)
 			vitesse_virage+=0.001;
@@ -116,26 +118,38 @@ int BaseRoulante::effectuerConsigne(double Angle_gyro)
 					vitesse_virage-=0.01;
 					std::cout<<"\nvaleur virage"<<vitesse_virage<<std::endl;
 	}*/
-	std::cout<<moyenneDroite<<" d "<< Consigne_Dist<<std::endl;
+	//std::cout<<moyenneDroite<<" d "<< Consigne_Dist<<std::endl;
+
 
 	powerRight=PID_DISTANCE(Consigne_Dist,moyenneDroite)-PID_ANGLE(Consigne_Ang,Angle_gyro);
 	powerLeft=-(PID_DISTANCE(Consigne_Dist,moyenneGauche)+PID_ANGLE(Consigne_Ang,Angle_gyro));
 	//std::cout<<"\ncpt : "<<cpt<<std::endl;
 	//std::cout<<"\nleft: "<<powerLeft<<" right: "<<powerRight<<"Angle :" << PID_ANGLE(Consigne_Ang,Angle_gyro)<<std::endl;
-	/*if(distance_vision==-1) {
+	if(distance_vision<Consigne_Dist+10) {
 		std::cout<<"\narret"<<std::endl;
-		if(powerRight>0) powerRight=-0.3;
-		else powerRight=0.3;
-		if(powerLeft>0) powerLeft=-0.3;
+		if(powerRight>0) powerRight=-0.03;
+		else powerRight=0.03;
+		if(powerLeft>0) powerLeft=-0.03;
 				else powerLeft=0.3;
-	}*/
+	}
 	//std::cout<<"\nerreur : "<<abs(distance_vision-Consigne_Dist)<<std::endl;
-	if(abs(distance_vision-Consigne_Dist)<25)
+	if(abs(distance_vision-Consigne_Dist)<5)
 		{
-		return 1;
+			std::cout<<"\nArrivée"<<std::endl;
+			return 1;
 		}
-	std::cout<<powerRight<<" DDFE "<< powerLeft<<std::endl;
+	//std::cout<<powerRight<<" DDFE "<< powerLeft<<std::endl;
+	/*if(Centre_bandes<280){
+		std::cout<<"\nvirage"<<std::endl;
+			virage+=0.02;
+			powerLeft-=virage;
+	}
+	if(Centre_bandes>380){
+		std::cout<<"\nvirage"<<std::endl;
 
+				virage+=0.02;
+				powerRight-=virage;
+	}*/
 	mecaFrontLeft.Set(powerLeft);
 	mecaBackLeft.Set(powerLeft);
 	mecaFrontRight.Set(powerRight);
